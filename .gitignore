@@ -1,0 +1,8 @@
+# ide
+.idea
+
+# ent
+ent/
+
+#api
+gen/

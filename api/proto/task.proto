@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package task;
+option go_package = "github.com/deniSSTK/task-engine/gen/task";
+
+service TaskService {
+  rpc CreateTask (CreateTaskRequest) returns (GetTaskResponse);
+}
+
+message CreateTaskRequest {
+  string name = 1;
+}
+
+message GetTaskResponse {
+  string id = 1;
+  string name = 2;
+}

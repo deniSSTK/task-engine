@@ -1,0 +1,43 @@
+version: 3
+
+tasks:
+  ent:init:
+    cmds:
+      - |
+        {{if .CLI_ARGS}}
+          go run entgo.io/ent/cmd/ent init --target ./schema {{.CLI_ARGS}}
+        {{else}}
+          echo "Error: schema name required. Usage: task ent:init -- schema_name"
+        {{end}}
+
+  ent:generate:
+    aliases: [ ent:g ]
+    cmds:
+      - go run entgo.io/ent/cmd/ent generate --target ./ent ./schema
+
+  migrate:create:
+    desc: "Create migration using atlas.hcl"
+    cmds:
+      - mkdir -p migrations
+      - task ent:generate
+      - |
+        {{if .CLI_ARGS}}
+          atlas migrate diff {{.CLI_ARGS}} --env local
+        {{else}}
+          echo "Error: migration name required."
+          exit 1
+        {{end}}
+
+  migrate:apply:
+    desc: "Apply migrations using atlas.hcl"
+    cmds:
+      - atlas migrate apply --env local
+
+  migrate:status:
+    desc: "Show migration status"
+    cmds:
+      - atlas migrate status --env local
+
+  atlas:hash:
+    cmds:
+      - atlas migrate hash --env local
