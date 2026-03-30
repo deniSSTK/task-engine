@@ -22,21 +22,31 @@ func (User) Mixin() []ent.Mixin {
 // Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name").MaxLen(100),
-		field.String("second_name").MaxLen(100).Optional(),
-		field.String("full_name").MaxLen(201),
+		field.String("name").
+			MaxLen(100),
 
-		field.String("email").Unique(),
-		field.String("password"),
+		field.String("second_name").MaxLen(100).
+			Optional().
+			NotEmpty(),
 
-		field.Time("last_logined_at"),
+		field.String("full_name").
+			MaxLen(201),
+
+		field.String("email").
+			Unique(),
+
+		field.String("password_hash"),
+
+		field.Time("last_login_at").
+			Optional().
+			Nillable(),
 
 		field.Enum("role").
 			Values(
-				string(user.Admin),
-				string(user.User),
+				string(userDomain.Admin),
+				string(userDomain.User),
 			).
-			Default(string(user.User)),
+			Default(string(userDomain.User)),
 	}
 }
 

@@ -12,7 +12,7 @@ service AuthService {
 message TokensResponse {
   string access_token = 1;
   string refresh_token = 2;
-  int64 expires_at = 3;
+  int64 refresh_expires_at = 3;
 }
 
 message RegisterRequest {

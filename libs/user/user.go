@@ -1,4 +1,4 @@
-package user
+package userDomain
 
 type UserRole string
 

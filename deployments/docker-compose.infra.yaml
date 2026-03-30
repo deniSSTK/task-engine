@@ -6,14 +6,26 @@ services:
     container_name: tasker-db
     restart: always
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: postgres
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+
+  redis:
+    image: redis:8-alpine
+    container_name: tasker-redis
+    restart: always
+    command: /bin/sh -c 'redis-server --appendonly yes --requirepass "$${REDIS_PASSWORD}"'
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redisdata:/data
 
   kafka:
     image: bitnami/kafka:3.7
@@ -41,4 +53,5 @@ services:
       - kafka
 
 volumes:
-  pgdata:
+  pg_data:
+  redis_data:

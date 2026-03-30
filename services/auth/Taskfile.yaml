@@ -1,11 +1,14 @@
 version: 3
 
 tasks:
+  run:dev:
+    cmd: go run main.go
+
   ent:init:
     cmds:
       - |
         {{if .CLI_ARGS}}
-          go run entgo.io/ent/cmd/ent init --target ./schema {{.CLI_ARGS}}
+          go run entgo.io/ent/cmd/ent new --target ./schema {{.CLI_ARGS}}
         {{else}}
           echo "Error: schema name required. Usage: task ent:init -- schema_name"
         {{end}}

@@ -4,5 +4,9 @@
 # ent
 ent/
 
-#api
+# api
 gen/
+
+# settings
+.env
+**/.env
