@@ -12,6 +12,7 @@ var Module = fx.Options(
 	fx.Provide(
 		authRepo.NewRepository,
 		authService.NewService,
+
 		authGrpc.NewServer,
 		authGrpc.NewHandler,
 	),

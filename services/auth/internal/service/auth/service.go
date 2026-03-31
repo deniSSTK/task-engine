@@ -39,7 +39,6 @@ func NewService(
 
 	log *logger.Logger,
 	cfg *config.Config,
-
 ) *Service {
 	authServiceLog := log.Named("AuthService")
 
