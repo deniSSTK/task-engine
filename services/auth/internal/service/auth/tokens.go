@@ -22,7 +22,7 @@ func (s *Service) generateAndStoreTokens(
 	cachePayload := UserSessionCachePayload{
 		UserId:       payload.UserId,
 		RefreshToken: tokens.RefreshToken,
-		ExpiredAt:    s.config.JWT.RefreshTokenTTL,
+		TTL:          s.config.JWT.RefreshTokenTTL,
 	}
 
 	if err = s.saveUserSessionCache(ctx, &cachePayload); err != nil {

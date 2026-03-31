@@ -1,23 +1,13 @@
 version: '3'
 
 tasks:
-  proto:gen:
-    desc: "Generate code from proto files"
+  buf:gen:
     cmds:
-      - |
-        for file in api/proto/*.proto; do
-          name=$(basename "$file" .proto)
-          echo "Generating code for $name..."
-        
-          mkdir -p gen/$name
-        
-          protoc --proto_path=api/proto \
-            --go_out=gen/$name --go_opt=paths=source_relative \
-            --go-grpc_out=gen/$name --go-grpc_opt=paths=source_relative \
-            "$file"
-        done
-        echo "Code generation complete."
-    silent: false
+      - task buf:update
+      - buf generate
+
+  buf:update:
+    cmd: buf dep update
 
   docker:infra:dev:
     cmd: docker compose --env-file .env -f deployments/docker-compose.infra.yaml up -d
@@ -25,14 +15,16 @@ tasks:
   docker:down:
     cmds:
       - |
-        docker compose \
+        docker compose --env-file .env \
         -f deployments/docker-compose.infra.yaml \
         -f deployments/docker-compose.services.yaml \
         down
 
-  docker:app:
+  run:app:
     cmds:
     - task docker:down
+    - task buf:update
+    - task buf:gen
     - |
       docker compose --env-file .env \
       -f deployments/docker-compose.infra.yaml \

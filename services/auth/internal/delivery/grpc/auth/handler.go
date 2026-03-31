@@ -5,8 +5,7 @@ import (
 	"context"
 	"errors"
 	grpcUtils "libs/grpc"
-
-	proto "proto/auth"
+	proto "proto/proto/auth/v1"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -21,7 +20,7 @@ func NewHandler(authService *authService.Service) *Handler {
 	return &Handler{authService: authService}
 }
 
-func (h *Handler) Register(ctx context.Context, dto *proto.RegisterRequest) (*proto.TokensResponse, error) {
+func (h *Handler) Register(ctx context.Context, dto *proto.RegisterRequest) (*proto.RegisterResponse, error) {
 	if dto == nil {
 		return nil, grpcUtils.BodyIsRequired
 	}
@@ -47,10 +46,12 @@ func (h *Handler) Register(ctx context.Context, dto *proto.RegisterRequest) (*pr
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return MapTokenPairToProtoTokenResponse(resp), nil
+	return &proto.RegisterResponse{
+		Tokens: MapTokenPairToProtoTokenDetail(resp),
+	}, nil
 }
 
-func (h *Handler) Login(ctx context.Context, dto *proto.LoginRequest) (*proto.TokensResponse, error) {
+func (h *Handler) Login(ctx context.Context, dto *proto.LoginRequest) (*proto.LoginResponse, error) {
 	if dto == nil {
 		return nil, grpcUtils.BodyIsRequired
 	}
@@ -72,10 +73,12 @@ func (h *Handler) Login(ctx context.Context, dto *proto.LoginRequest) (*proto.To
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return MapTokenPairToProtoTokenResponse(resp), nil
+	return &proto.LoginResponse{
+		Tokens: MapTokenPairToProtoTokenDetail(resp),
+	}, nil
 }
 
-func (h *Handler) Refresh(_ context.Context, dto *proto.RefreshRequest) (*proto.TokensResponse, error) {
+func (h *Handler) Refresh(ctx context.Context, dto *proto.RefreshRequest) (*proto.RefreshResponse, error) {
 	if dto == nil {
 		return nil, grpcUtils.BodyIsRequired
 	}
@@ -84,10 +87,12 @@ func (h *Handler) Refresh(_ context.Context, dto *proto.RefreshRequest) (*proto.
 		return nil, grpcUtils.FieldIsRequired("refresh_token")
 	}
 
-	resp, err := h.authService.Refresh(dto)
+	resp, err := h.authService.Refresh(ctx, dto)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
-	return MapTokenPairToProtoTokenResponse(resp), nil
+	return &proto.RefreshResponse{
+		Tokens: MapTokenPairToProtoTokenDetail(resp),
+	}, nil
 }

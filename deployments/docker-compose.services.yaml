@@ -4,6 +4,7 @@ services:
       context: ..
       dockerfile: services/auth/Dockerfile
     restart: unless-stopped
+    container_name: tasker-auth-service
     env_file:
       - ../.env
       - ../services/auth/.env

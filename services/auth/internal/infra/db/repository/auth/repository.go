@@ -7,9 +7,8 @@ import (
 	txUtils "auth-service/utils/tx-utils"
 	"context"
 	userDomain "libs/user"
+	proto "proto/proto/auth/v1"
 	"time"
-
-	proto "proto/auth"
 
 	"github.com/google/uuid"
 )

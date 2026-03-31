@@ -2,8 +2,7 @@ package authGrpc
 
 import (
 	grpcUtils "libs/grpc"
-
-	proto "proto/auth"
+	proto "proto/proto/auth/v1"
 )
 
 type Server struct {

@@ -14,7 +14,7 @@ import (
 
 	redisClient "github.com/redis/go-redis/v9"
 
-	proto "proto/auth"
+	proto "proto/proto/auth/v1"
 
 	"go.uber.org/zap"
 )
