@@ -9,7 +9,8 @@ import (
 	userDomain "libs/user"
 	"time"
 
-	proto "github.com/deniSSTK/task-engine/gen/auth"
+	proto "proto/auth"
+
 	"github.com/google/uuid"
 )
 
@@ -60,4 +61,52 @@ func (r *Repository) CreateUser(
 	}
 
 	return createdUser.ID, userDomain.UserRole(createdUser.Role), nil
+}
+
+func (r *Repository) GetPasswordHashByEmail(
+	ctx context.Context,
+	email string,
+) (string, error) {
+	client := txUtils.FromContext(ctx, r.client)
+
+	return client.User.
+		Query().
+		Where(user.EmailEQ(email)).
+		Select(user.FieldPasswordHash).
+		String(ctx)
+}
+
+func (r *Repository) UpdateUserLastLoginAtByEmail(
+	ctx context.Context,
+	email string,
+) error {
+	client := txUtils.FromContext(ctx, r.client)
+
+	return client.User.
+		Update().
+		Where(user.EmailEQ(email)).
+		SetLastLoginAt(time.Now()).
+		Exec(ctx)
+}
+
+func (r *Repository) GetUserIdAndRoleByEmail(
+	ctx context.Context,
+	email string,
+) (GetUserIdAndRoleByEmailRes, error) {
+	client := txUtils.FromContext(ctx, r.client)
+
+	var res GetUserIdAndRoleByEmailRes
+
+	if err := client.User.
+		Query().
+		Where(user.EmailEQ(email)).
+		Select(
+			user.FieldID,
+			user.FieldRole,
+		).
+		Scan(ctx, &res); err != nil {
+		return GetUserIdAndRoleByEmailRes{}, err
+	}
+
+	return res, nil
 }

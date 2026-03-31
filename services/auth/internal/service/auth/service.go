@@ -7,13 +7,15 @@ import (
 	"auth-service/internal/infra/security/jwt"
 	"auth-service/utils"
 	"context"
+	defErrors "libs/errors"
 	"libs/logger"
 	"libs/redis"
 	"libs/transaction"
 
 	redisClient "github.com/redis/go-redis/v9"
 
-	proto "github.com/deniSSTK/task-engine/gen/auth"
+	proto "proto/auth"
+
 	"go.uber.org/zap"
 )
 
@@ -53,7 +55,7 @@ func NewService(
 	}
 }
 
-func (s *Service) Register(ctx context.Context, dto *proto.RegisterRequest) (*proto.TokensResponse, error) {
+func (s *Service) Register(ctx context.Context, dto *proto.RegisterRequest) (*jwt.TokenPair, error) {
 	s.log.Info("Registering user")
 
 	emailExists, err := s.authRepo.EmailExists(ctx, dto.Email)
@@ -88,28 +90,15 @@ func (s *Service) Register(ctx context.Context, dto *proto.RegisterRequest) (*pr
 			return txErr
 		}
 
-		tokenPayload := jwt.TokenPayload{
+		payload := jwt.TokenPayload{
 			UserId: userId,
 			Role:   role,
 		}
 
-		tokens, txErr = s.tokenManager.GenerateBothTokens(tokenPayload)
+		tokens, txErr = s.generateAndStoreTokens(txCtx, payload)
 		if txErr != nil {
-			s.log.Error(FailedToCreateUser.Error(), zap.Error(txErr))
-			return txErr
-		}
-
-		// TODO: create db session with deviceId
-
-		cachePayload := UserSessionCachePayload{
-			UserId:       userId,
-			RefreshToken: tokens.RefreshToken,
-			ExpiredAt:    s.config.JWT.RefreshTokenTTL,
-		}
-
-		if txErr = s.saveUserSessionCache(txCtx, &cachePayload); txErr != nil {
-			s.log.Error(FailedToCreateUser.Error(), zap.Error(err))
-			return FailedToCreateUser
+			s.log.Error(FailedToGenerateTokens.Error(), zap.Error(txErr))
+			return FailedToGenerateTokens
 		}
 
 		return nil
@@ -118,17 +107,81 @@ func (s *Service) Register(ctx context.Context, dto *proto.RegisterRequest) (*pr
 		return nil, FailedToCreateUser
 	}
 
-	return &proto.TokensResponse{
-		AccessToken:      tokens.AccessToken,
-		RefreshToken:     tokens.RefreshToken,
-		RefreshExpiresAt: tokens.RefreshExpiredAt.Unix(),
-	}, nil
+	return tokens, nil
 }
 
-func (s *Service) Login(context.Context, *proto.LoginRequest) (*proto.TokensResponse, error) {
+func (s *Service) Login(ctx context.Context, dto *proto.LoginRequest) (*jwt.TokenPair, error) {
+	log := s.log
+	email := dto.Email
 
+	passwordHash, err := s.authRepo.GetPasswordHashByEmail(ctx, email)
+	if err != nil {
+		log.Error(FailedToValidateCredentials.Error(), zap.Error(err))
+		return nil, FailedToLogin
+	}
+
+	if err = utils.CheckPassword(passwordHash, dto.Password); err != nil {
+		log.Error(InvalidCredentials.Error(), zap.Error(err))
+		return nil, InvalidCredentials
+	}
+
+	var tokens *jwt.TokenPair
+
+	if err = s.transactionManager.WithTransaction(ctx, func(txCtx context.Context) (txErr error) {
+		if txErr = s.authRepo.UpdateUserLastLoginAtByEmail(txCtx, email); txErr != nil {
+			log.Error(FailedToUpdateUserInfo.Error(), zap.Error(txErr))
+			return FailedToUpdateUserInfo
+		}
+
+		targetUser, txErr := s.authRepo.GetUserIdAndRoleByEmail(txCtx, email)
+		if err != nil {
+			log.Error(defErrors.FailedToGetData.Error(), zap.Error(txErr))
+			return defErrors.FailedToGetData
+		}
+
+		payload := jwt.TokenPayload{
+			UserId: targetUser.Id,
+			Role:   targetUser.Role,
+		}
+
+		tokens, txErr = s.generateAndStoreTokens(txCtx, payload)
+		if txErr != nil {
+			s.log.Error(FailedToGenerateTokens.Error(), zap.Error(txErr))
+			return FailedToGenerateTokens
+		}
+
+		return nil
+	}); err != nil {
+		return &jwt.TokenPair{}, FailedToLogin
+	}
+
+	return tokens, nil
 }
 
-func (s *Service) Refresh(context.Context, *proto.RefreshRequest) (*proto.TokensResponse, error) {
+func (s *Service) Refresh(context.Context, *proto.RefreshRequest) (*proto.TokensResponse, error) {}
 
+func (s *Service) generateAndStoreTokens(
+	ctx context.Context,
+	payload jwt.TokenPayload,
+) (*jwt.TokenPair, error) {
+	tokens, err := s.tokenManager.GenerateBothTokens(payload)
+	if err != nil {
+		s.log.Error(FailedToGenerateTokens.Error(), zap.Error(err))
+		return &jwt.TokenPair{}, err
+	}
+
+	// TODO: create db session with deviceId
+
+	cachePayload := UserSessionCachePayload{
+		UserId:       payload.UserId,
+		RefreshToken: tokens.RefreshToken,
+		ExpiredAt:    s.config.JWT.RefreshTokenTTL,
+	}
+
+	if err = s.saveUserSessionCache(ctx, &cachePayload); err != nil {
+		s.log.Error(FailedToSaveUserSessionCache.Error(), zap.Error(err))
+		return &jwt.TokenPair{}, FailedToSaveUserSessionCache
+	}
+
+	return tokens, nil
 }

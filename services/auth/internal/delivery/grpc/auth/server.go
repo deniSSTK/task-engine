@@ -3,7 +3,7 @@ package authGrpc
 import (
 	"auth-service/internal/delivery/grpc"
 
-	proto "github.com/deniSSTK/task-engine/gen/auth"
+	proto "proto/auth"
 )
 
 type Server struct {

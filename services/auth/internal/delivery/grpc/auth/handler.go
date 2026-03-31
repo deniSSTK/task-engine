@@ -5,7 +5,8 @@ import (
 	"context"
 	"errors"
 
-	proto "github.com/deniSSTK/task-engine/gen/auth"
+	proto "proto/auth"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -46,13 +47,33 @@ func (h *Handler) Register(ctx context.Context, dto *proto.RegisterRequest) (*pr
 		}
 	}
 
-	return resp, nil
+	return MapTokenPairToProtoTokenResponse(resp), nil
 }
 
-func (h *Handler) Login(context.Context, *proto.LoginRequest) (*proto.TokensResponse, error) {
+func (h *Handler) Login(ctx context.Context, dto *proto.LoginRequest) (*proto.TokensResponse, error) {
+	if dto == nil {
+		return nil, status.Error(codes.InvalidArgument, "request body is required")
+	}
 
+	if dto.Email == "" {
+		return nil, status.Error(codes.InvalidArgument, "email is required")
+	}
+
+	if dto.Password == "" {
+		return nil, status.Error(codes.InvalidArgument, "password is required")
+	}
+
+	resp, err := h.authService.Login(ctx, dto)
+	if err != nil {
+		switch {
+		case errors.Is(err, authService.InvalidCredentials):
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		default:
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	return MapTokenPairToProtoTokenResponse(resp), nil
 }
 
-func (h *Handler) Refresh(context.Context, *proto.RefreshRequest) (*proto.TokensResponse, error) {
-
-}
+func (h *Handler) Refresh(context.Context, *proto.RefreshRequest) (*proto.TokensResponse, error) {}
