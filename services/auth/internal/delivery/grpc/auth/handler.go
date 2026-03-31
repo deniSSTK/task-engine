@@ -4,6 +4,7 @@ import (
 	authService "auth-service/internal/service/auth"
 	"context"
 	"errors"
+	grpcUtils "libs/grpc"
 
 	proto "proto/auth"
 
@@ -22,19 +23,19 @@ func NewHandler(authService *authService.Service) *Handler {
 
 func (h *Handler) Register(ctx context.Context, dto *proto.RegisterRequest) (*proto.TokensResponse, error) {
 	if dto == nil {
-		return nil, status.Error(codes.InvalidArgument, "request body is required")
+		return nil, grpcUtils.BodyIsRequired
 	}
 
 	if dto.Email == "" {
-		return nil, status.Error(codes.InvalidArgument, "email is required")
+		return nil, grpcUtils.FieldIsRequired("email")
 	}
 
 	if dto.Password == "" {
-		return nil, status.Error(codes.InvalidArgument, "password is required")
+		return nil, grpcUtils.FieldIsRequired("password")
 	}
 
 	if dto.Name == "" {
-		return nil, status.Error(codes.InvalidArgument, "name is required")
+		return nil, grpcUtils.FieldIsRequired("name")
 	}
 
 	resp, err := h.authService.Register(ctx, dto)
@@ -51,15 +52,15 @@ func (h *Handler) Register(ctx context.Context, dto *proto.RegisterRequest) (*pr
 
 func (h *Handler) Login(ctx context.Context, dto *proto.LoginRequest) (*proto.TokensResponse, error) {
 	if dto == nil {
-		return nil, status.Error(codes.InvalidArgument, "request body is required")
+		return nil, grpcUtils.BodyIsRequired
 	}
 
 	if dto.Email == "" {
-		return nil, status.Error(codes.InvalidArgument, "email is required")
+		return nil, grpcUtils.FieldIsRequired("email")
 	}
 
 	if dto.Password == "" {
-		return nil, status.Error(codes.InvalidArgument, "password is required")
+		return nil, grpcUtils.FieldIsRequired("password")
 	}
 
 	resp, err := h.authService.Login(ctx, dto)
@@ -76,11 +77,11 @@ func (h *Handler) Login(ctx context.Context, dto *proto.LoginRequest) (*proto.To
 
 func (h *Handler) Refresh(_ context.Context, dto *proto.RefreshRequest) (*proto.TokensResponse, error) {
 	if dto == nil {
-		return nil, status.Error(codes.InvalidArgument, "request body is required")
+		return nil, grpcUtils.BodyIsRequired
 	}
 
 	if dto.RefreshToken == "" {
-		return nil, status.Error(codes.InvalidArgument, "refresh token is required")
+		return nil, grpcUtils.FieldIsRequired("refresh_token")
 	}
 
 	resp, err := h.authService.Refresh(dto)
