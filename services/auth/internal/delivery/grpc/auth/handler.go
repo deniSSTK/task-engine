@@ -39,12 +39,11 @@ func (h *Handler) Register(ctx context.Context, dto *proto.RegisterRequest) (*pr
 
 	resp, err := h.authService.Register(ctx, dto)
 	if err != nil {
-		switch {
-		case errors.Is(err, authService.EmailAlreadyExists):
+		if errors.Is(err, authService.EmailAlreadyExists) {
 			return nil, status.Error(codes.AlreadyExists, err.Error())
-		default:
-			return nil, status.Error(codes.Internal, err.Error())
 		}
+
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return MapTokenPairToProtoTokenResponse(resp), nil
@@ -65,12 +64,11 @@ func (h *Handler) Login(ctx context.Context, dto *proto.LoginRequest) (*proto.To
 
 	resp, err := h.authService.Login(ctx, dto)
 	if err != nil {
-		switch {
-		case errors.Is(err, authService.InvalidCredentials):
+		if errors.Is(err, authService.InvalidCredentials) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
-		default:
-			return nil, status.Error(codes.Internal, err.Error())
 		}
+
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return MapTokenPairToProtoTokenResponse(resp), nil
