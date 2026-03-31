@@ -13,5 +13,6 @@ var (
 	FailedToGenerateTokens  = errors.New("failed to generate tokens")
 	FailedToGetTokenPayload = errors.New("failed to get token payload")
 
-	FailedToSaveUserSessionCache = errors.New("failed to save user session in cache")
+	FailedToSaveUserSessionCache         = errors.New("failed to save user session in cache")
+	FailedToVerifySessionExistingInCache = errors.New("failed to verify session existing in cache")
 )

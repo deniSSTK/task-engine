@@ -11,9 +11,10 @@ import (
 )
 
 type UserSessionCachePayload struct {
-	UserId       uuid.UUID     `redis:"user_id"`
-	RefreshToken string        `redis:"refresh_token"`
-	ExpiredAt    time.Duration `redis:"expired_at"`
+	UserId       uuid.UUID `redis:"user_id"`
+	RefreshToken string    `redis:"refresh_token"`
+
+	TTL time.Duration `redis:"-"`
 	//IsRevoked    bool
 }
 
@@ -25,7 +26,7 @@ func (s *Service) saveUserSessionCache(
 
 	_, err := s.redisClient.Pipelined(ctx, func(pipe redis.Pipeliner) error {
 		pipe.HSet(ctx, key, payload)
-		pipe.Expire(ctx, key, payload.ExpiredAt)
+		pipe.Expire(ctx, key, payload.TTL)
 		return nil
 	})
 
@@ -38,5 +39,20 @@ func (s *Service) saveUserSessionCache(
 }
 
 func (s *Service) buildUserSessionCacheKey(userId string) string {
-	return fmt.Sprintf("session:%s", userId)
+	return fmt.Sprintf("session:%s:%s", userId)
+}
+
+func (s *Service) isSessionExists(
+	ctx context.Context,
+	userId string,
+) (bool, error) {
+	key := s.buildUserSessionCacheKey(userId)
+
+	val, err := s.redisClient.Exists(ctx, key).Result()
+	if err != nil {
+		s.log.Error(FailedToVerifySessionExistingInCache.Error(), zap.Error(err))
+		return false, FailedToVerifySessionExistingInCache
+	}
+
+	return val > 0, nil
 }

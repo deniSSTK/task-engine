@@ -55,12 +55,12 @@ func NewService(
 }
 
 func (s *Service) Register(ctx context.Context, dto *proto.RegisterRequest) (*jwt.TokenPair, error) {
-	s.log.Info("Registering user")
+	log := s.log.Named("Register")
 
 	emailExists, err := s.authRepo.EmailExists(ctx, dto.Email)
 
 	if err != nil {
-		s.log.Error(
+		log.Error(
 			FailedToValidateCredentials.Error(),
 			zap.Error(err),
 			zap.String("email", dto.Email),
@@ -69,13 +69,13 @@ func (s *Service) Register(ctx context.Context, dto *proto.RegisterRequest) (*jw
 	}
 
 	if emailExists {
-		s.log.Error(EmailAlreadyExists.Error())
+		log.Error(EmailAlreadyExists.Error())
 		return nil, EmailAlreadyExists
 	}
 
 	passwordHash, err := utils.HashPassword(dto.Password)
 	if err != nil {
-		s.log.Error(FailedToCreateUser.Error(), zap.Error(err))
+		log.Error(FailedToCreateUser.Error(), zap.Error(err))
 		return nil, FailedToCreateUser
 	}
 
@@ -85,7 +85,7 @@ func (s *Service) Register(ctx context.Context, dto *proto.RegisterRequest) (*jw
 
 		userId, role, txErr := s.authRepo.CreateUser(txCtx, dto, passwordHash)
 		if txErr != nil {
-			s.log.Error(FailedToCreateUser.Error(), zap.Error(txErr))
+			log.Error(FailedToCreateUser.Error(), zap.Error(txErr))
 			return txErr
 		}
 
@@ -96,13 +96,13 @@ func (s *Service) Register(ctx context.Context, dto *proto.RegisterRequest) (*jw
 
 		tokens, txErr = s.generateAndStoreTokens(txCtx, payload)
 		if txErr != nil {
-			s.log.Error(FailedToGenerateTokens.Error(), zap.Error(txErr))
+			log.Error(FailedToGenerateTokens.Error(), zap.Error(txErr))
 			return FailedToGenerateTokens
 		}
 
 		return nil
 	}); err != nil {
-		s.log.Error(FailedToCreateUser.Error(), zap.Error(err))
+		log.Error(FailedToCreateUser.Error(), zap.Error(err))
 		return nil, FailedToCreateUser
 	}
 
@@ -110,7 +110,7 @@ func (s *Service) Register(ctx context.Context, dto *proto.RegisterRequest) (*jw
 }
 
 func (s *Service) Login(ctx context.Context, dto *proto.LoginRequest) (*jwt.TokenPair, error) {
-	log := s.log
+	log := s.log.Named("Login")
 	email := dto.Email
 
 	passwordHash, err := s.authRepo.GetPasswordHashByEmail(ctx, email)
@@ -157,13 +157,24 @@ func (s *Service) Login(ctx context.Context, dto *proto.LoginRequest) (*jwt.Toke
 	return tokens, nil
 }
 
-func (s *Service) Refresh(dto *proto.RefreshRequest) (*jwt.TokenPair, error) {
-	log := s.log
+func (s *Service) Refresh(ctx context.Context, dto *proto.RefreshRequest) (*jwt.TokenPair, error) {
+	log := s.log.Named("Refresh")
 
 	tokenPayload, refreshExpiresAt, err := s.tokenManager.ParseTokenPayload(dto.RefreshToken, jwt.Refresh)
 	if err != nil {
 		log.Error(FailedToGetTokenPayload.Error(), zap.Error(err))
 		return nil, err
+	}
+
+	sessionExists, err := s.isSessionExists(ctx, tokenPayload.UserId.String())
+	if err != nil {
+		log.Error(FailedToVerifySessionExistingInCache.Error(), zap.Error(err))
+		return nil, err
+	}
+
+	if !sessionExists {
+		log.Error(FailedToVerifySessionExistingInCache.Error())
+		return nil, FailedToVerifySessionExistingInCache
 	}
 
 	accessToken, err := s.tokenManager.GenerateToken(*tokenPayload, jwt.Access)
