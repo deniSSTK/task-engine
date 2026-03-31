@@ -20,6 +20,7 @@ tasks:
         -f deployments/docker-compose.services.yaml \
         down
 
+  # TODO: add build with --no-cache flag after docker compose up
   run:app:
     cmds:
     - task docker:down
