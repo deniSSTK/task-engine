@@ -24,12 +24,12 @@ type DefConfig struct {
 	AppPort string
 }
 
-func NewDefConfig(extraEnvFiles ...string) *DefConfig {
+func NewDefConfig(appPortName string, extraEnvFiles ...string) *DefConfig {
 	loadEnvFiles(extraEnvFiles...)
 
 	return &DefConfig{
 		DBUrl:   buildDatabaseURL(),
-		AppPort: EnvMust("APP_PORT"),
+		AppPort: EnvMust(appPortName),
 		Redis: redisConfig{
 			Addr:     buildRedisAddr(),
 			Username: GetEnv("REDIS_USERNAME", ""),

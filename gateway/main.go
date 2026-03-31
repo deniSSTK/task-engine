@@ -15,6 +15,8 @@ func main() {
 	ctx := context.Background()
 	mux := runtime.NewServeMux()
 
+	config := NewConfig()
+
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
@@ -22,14 +24,18 @@ func main() {
 	if err := proto.RegisterAuthServiceHandlerFromEndpoint(
 		ctx,
 		mux,
-		"localhost:50001",
+		"localhost:"+config.AuthPort,
 		opts,
 	); err != nil {
 		panic(err)
 	}
 
-	log.Println("Central Gateway started on http://localhost:8080")
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+	log.Printf("Starting server on port %s", config.AppPort)
+	if err := http.ListenAndServe(
+		":"+config.AppPort,
+		mux,
+	); err != nil {
 		log.Fatal(err)
 	}
+	log.Println("Server stopped")
 }

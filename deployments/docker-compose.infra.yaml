@@ -51,7 +51,7 @@ services:
     image: docker.redpanda.com/redpandadata/console:latest
     container_name: tasker-kafka-ui
     ports:
-      - "8080:8080"
+      - "8085:8085"
     environment:
       KAFKA_BROKERS: kafka:9092
     depends_on:

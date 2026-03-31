@@ -1,4 +1,14 @@
 services:
+  gateway:
+    build:
+      context: ..
+      dockerfile: gateway/Dockerfile
+    restart: unless-stopped
+    container_name: tasker-gateway
+    env_file: ../.env
+    ports:
+      - "${GATEWAY_PORT}:8080"
+
   auth-service:
     build:
       context: ..
@@ -9,7 +19,8 @@ services:
       - ../.env
       - ../services/auth/.env
     depends_on:
+      - gateway
       - postgres
       - redis
     ports:
-      - "50001:50001"
+      - "${AUTH_PORT}:50001"
