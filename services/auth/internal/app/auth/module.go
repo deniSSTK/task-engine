@@ -13,7 +13,9 @@ var Module = fx.Options(
 		authRepo.NewRepository,
 		authService.NewService,
 
-		authGrpc.NewServer,
+		//authGrpc.NewServer,
 		authGrpc.NewHandler,
 	),
+
+	fx.Invoke(authGrpc.NewServer),
 )

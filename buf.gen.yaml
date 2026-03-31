@@ -3,14 +3,18 @@ plugins:
   - name: go
     out: gen/proto
     opt: paths=source_relative
+
   - name: go-grpc
     out: gen/proto
     opt: paths=source_relative
+
   - name: grpc-gateway
     out: gen/proto
     opt: paths=source_relative
+
   - name: openapiv2
     out: gen/openapiv2
+    strategy: all
     opt:
       - logtostderr=true
       - allow_merge=true

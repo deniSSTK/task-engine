@@ -24,6 +24,7 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates tzdata
 
 COPY --from=builder /gateway /usr/local/bin/gateway
+COPY --from=builder /app/gen/openapiv2 ./openapi
 
 EXPOSE 8080
 

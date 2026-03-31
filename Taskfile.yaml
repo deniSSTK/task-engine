@@ -9,6 +9,23 @@ tasks:
   buf:update:
     cmd: buf dep update
 
+  db:wait:
+    cmds:
+      - |
+        until docker exec tasker-db sh -c 'pg_isready -h 127.0.0.1 -p 5432 -U "$POSTGRES_USER" -d auth_db' >/dev/null 2>&1; do
+          echo "waiting for auth db..."
+          sleep 1
+        done
+
+  db:migrate:auth:
+    cmds:
+      - task db:wait
+      - task -d services/auth migrate:apply
+
+  db:migrate:
+    cmds:
+      - task db:migrate:auth
+
   docker:infra:dev:
     cmd: docker compose --env-file .env -f deployments/docker-compose.infra.yaml up -d
 
@@ -20,14 +37,28 @@ tasks:
         -f deployments/docker-compose.services.yaml \
         down
 
-  # TODO: add build with --no-cache flag after docker compose up
+  docker:build:
+    cmds:
+      - |
+        docker compose --env-file .env \
+        -f deployments/docker-compose.infra.yaml \
+        -f deployments/docker-compose.services.yaml \
+        build --no-cache
+
+  docker:up:
+    cmds:
+      - |
+        docker compose --env-file .env \
+        -f deployments/docker-compose.infra.yaml \
+        -f deployments/docker-compose.services.yaml \
+        up -d
+
   run:app:
     cmds:
-    - task docker:down
-    - task buf:update
-    - task buf:gen
-    - |
-      docker compose --env-file .env \
-      -f deployments/docker-compose.infra.yaml \
-      -f deployments/docker-compose.services.yaml \
-      up -d --build
+      - task docker:down
+      - task buf:update
+      - task buf:gen
+      - task docker:infra:dev
+      - task db:migrate
+      - task docker:build
+      - task docker:up

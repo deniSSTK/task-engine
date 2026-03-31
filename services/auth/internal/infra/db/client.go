@@ -6,6 +6,7 @@ import (
 	defErrors "libs/errors"
 	"libs/logger"
 
+	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 )
 

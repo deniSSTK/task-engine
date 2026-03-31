@@ -21,12 +21,16 @@ type Config struct {
 	JWT jwtConfig
 }
 
-func NewConfig() *Config {
+func NewConfig(defConfig *env.DefConfig) *Config {
 	return &Config{
-		DefConfig: env.NewDefConfig("AUTH_PORT", serviceEnvPath()),
+		DefConfig: defConfig,
 
 		JWT: buildJwtConfig(),
 	}
+}
+
+func NewDefConfig() *env.DefConfig {
+	return env.NewDefConfig("AUTH_PORT", serviceEnvPath())
 }
 
 func serviceEnvPath() string {

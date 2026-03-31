@@ -13,6 +13,8 @@ import (
 var Module = fx.Options(
 	fx.Provide(
 		config.NewConfig,
+		config.NewDefConfig,
+
 		logger.NewLogger,
 		redis.NewRedis,
 	),

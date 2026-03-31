@@ -32,6 +32,8 @@ func NewTokenManager(cfg *config.Config, log *logger.Logger) *TokenManager {
 }
 
 func (tm *TokenManager) GenerateBothTokens(payload TokenPayload) (*TokenPair, error) {
+	refreshExpiresAt := time.Now().Add(tm.refreshTTL)
+
 	accessToken, err := tm.GenerateToken(payload, Access)
 	if err != nil {
 		return nil, err
@@ -43,8 +45,9 @@ func (tm *TokenManager) GenerateBothTokens(payload TokenPayload) (*TokenPair, er
 	}
 
 	return &TokenPair{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		AccessToken:      accessToken,
+		RefreshToken:     refreshToken,
+		RefreshExpiredAt: refreshExpiresAt,
 	}, nil
 }
 

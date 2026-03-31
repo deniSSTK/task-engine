@@ -45,15 +45,19 @@ func buildDatabaseURL() string {
 		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		EnvMust("POSTGRES_USER"),
 		EnvMust("POSTGRES_PASSWORD"),
-		EnvMust("POSTGRES_HOST"),
-		EnvMust("POSTGRES_PORT"),
+		GetEnv("POSTGRES_HOST", "localhost"),
+		GetEnv("POSTGRES_PORT", "5432"),
 		EnvMust("DB_NAME"),
-		EnvMust("POSTGRES_SSLMODE"),
+		GetEnv("POSTGRES_SSLMODE", "disable"),
 	)
 }
 
 func buildRedisAddr() string {
-	return fmt.Sprintf("%s:%s", EnvMust("REDIS_HOST"), EnvMust("REDIS_PORT"))
+	return fmt.Sprintf(
+		"%s:%s",
+		GetEnv("REDIS_HOST", "localhost"),
+		GetEnv("REDIS_PORT", "6379"),
+	)
 }
 
 func buildRedisDB() int {
