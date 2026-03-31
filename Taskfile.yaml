@@ -53,12 +53,15 @@ tasks:
         -f deployments/docker-compose.services.yaml \
         up -d
 
-  run:app:
+  app:run:
     cmds:
       - task docker:down
+
       - task buf:update
       - task buf:gen
+
       - task docker:infra:dev
       - task db:migrate
+
       - task docker:build
       - task docker:up
