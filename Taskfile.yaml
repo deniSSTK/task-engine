@@ -21,3 +21,20 @@ tasks:
 
   docker:infra:dev:
     cmd: docker compose --env-file .env -f deployments/docker-compose.infra.yaml up -d
+
+  docker:down:
+    cmds:
+      - |
+        docker compose \
+        -f deployments/docker-compose.infra.yaml \
+        -f deployments/docker-compose.services.yaml \
+        down
+
+  docker:app:
+    cmds:
+    - task docker:down
+    - |
+      docker compose --env-file .env \
+      -f deployments/docker-compose.infra.yaml \
+      -f deployments/docker-compose.services.yaml \
+      up -d --build

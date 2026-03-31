@@ -1,0 +1,14 @@
+services:
+  auth-service:
+    build:
+      context: ..
+      dockerfile: services/auth/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ../.env
+      - ../services/auth/.env
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "50001:50001"
