@@ -18,16 +18,18 @@ type redisConfig struct {
 }
 
 type DefConfig struct {
-	DBUrl string
-	Redis redisConfig
-	ENV   Env
+	DBUrl   string
+	Redis   redisConfig
+	ENV     Env
+	AppPort string
 }
 
 func NewDefConfig(extraEnvFiles ...string) *DefConfig {
 	loadEnvFiles(extraEnvFiles...)
 
 	return &DefConfig{
-		DBUrl: buildDatabaseURL(),
+		DBUrl:   buildDatabaseURL(),
+		AppPort: EnvMust("APP_PORT"),
 		Redis: redisConfig{
 			Addr:     buildRedisAddr(),
 			Username: GetEnv("REDIS_USERNAME", ""),

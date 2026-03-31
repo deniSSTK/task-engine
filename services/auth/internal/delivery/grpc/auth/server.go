@@ -1,17 +1,17 @@
 package authGrpc
 
 import (
-	"auth-service/internal/delivery/grpc"
+	grpcUtils "libs/grpc"
 
 	proto "proto/auth"
 )
 
 type Server struct {
-	grpcServer  *grpc.GrpcServer
+	grpcServer  *grpcUtils.GrpcServer
 	authHandler *Handler
 }
 
-func NewServer(grpcServer *grpc.GrpcServer, authHandler *Handler) *Server {
+func NewServer(grpcServer *grpcUtils.GrpcServer, authHandler *Handler) *Server {
 	proto.RegisterAuthServiceServer(grpcServer, authHandler)
 
 	return &Server{grpcServer, authHandler}

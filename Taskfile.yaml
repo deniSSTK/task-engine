@@ -19,5 +19,5 @@ tasks:
         echo "Code generation complete."
     silent: false
 
-    docker:infra:dev:
-      cmd: docker compose --env-file .env -f deployments/docker-compose.infra.yaml up -d
+  docker:infra:dev:
+    cmd: docker compose --env-file .env -f deployments/docker-compose.infra.yaml up -d
