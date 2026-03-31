@@ -17,6 +17,8 @@ type TokenManager struct {
 	log        *logger.Logger
 }
 
+var TokenMethod = jwt.SigningMethodHS256
+
 func NewTokenManager(cfg *config.Config, log *logger.Logger) *TokenManager {
 	tokenLog := log.Named("TokenManager")
 
@@ -71,11 +73,47 @@ func (tm *TokenManager) GenerateToken(
 		},
 	}
 
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(tm.secret)
+	token, err := jwt.NewWithClaims(TokenMethod, claims).SignedString(tm.secret)
 	if err != nil {
 		tm.log.Error(FailedToGenerateToken.Error(), zap.Error(err))
 		return "", FailedToGenerateToken
 	}
 
 	return token, nil
+}
+
+func (tm *TokenManager) ParseTokenPayload(
+	tokenString string,
+	expectedType TokenType,
+) (*TokenPayload, *jwt.NumericDate, error) {
+	claims := TokenClaims{}
+
+	token, err := jwt.ParseWithClaims(
+		tokenString,
+		claims,
+		func(token *jwt.Token) (any, error) {
+			if token.Method != TokenMethod {
+				return nil, InvalidToken
+			}
+
+			return tm.secret, nil
+		},
+		jwt.WithIssuer(tm.issuer),
+		jwt.WithValidMethods([]string{TokenMethod.Alg()}),
+	)
+
+	if err != nil {
+		tm.log.Error(InvalidToken.Error(), zap.Error(err))
+		return nil, &jwt.NumericDate{}, InvalidToken
+	}
+
+	if !token.Valid {
+		return nil, &jwt.NumericDate{}, InvalidToken
+	}
+
+	if claims.Type != expectedType {
+		return nil, &jwt.NumericDate{}, InvalidTokenType
+	}
+
+	return &claims.TokenPayload, claims.ExpiresAt, nil
 }

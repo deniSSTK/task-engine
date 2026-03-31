@@ -157,4 +157,28 @@ func (s *Service) Login(ctx context.Context, dto *proto.LoginRequest) (*jwt.Toke
 	return tokens, nil
 }
 
-func (s *Service) Refresh(context.Context, *proto.RefreshRequest) (*proto.TokensResponse, error) {}
+func (s *Service) Refresh(dto *proto.RefreshRequest) (*jwt.TokenPair, error) {
+	log := s.log
+
+	tokenPayload, refreshExpiresAt, err := s.tokenManager.ParseTokenPayload(dto.RefreshToken, jwt.Refresh)
+	if err != nil {
+		log.Error(FailedToGetTokenPayload.Error(), zap.Error(err))
+		return nil, err
+	}
+
+	accessToken, err := s.tokenManager.GenerateToken(*tokenPayload, jwt.Access)
+	if err != nil {
+		log.Error(
+			FailedToGenerateTokens.Error(),
+			zap.Error(err),
+			zap.String("tokenType", string(jwt.Access)),
+		)
+		return nil, err
+	}
+
+	return &jwt.TokenPair{
+		AccessToken:      accessToken,
+		RefreshToken:     dto.RefreshToken,
+		RefreshExpiredAt: refreshExpiresAt.Time,
+	}, nil
+}

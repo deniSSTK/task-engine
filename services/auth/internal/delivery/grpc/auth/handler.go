@@ -76,4 +76,19 @@ func (h *Handler) Login(ctx context.Context, dto *proto.LoginRequest) (*proto.To
 	return MapTokenPairToProtoTokenResponse(resp), nil
 }
 
-func (h *Handler) Refresh(context.Context, *proto.RefreshRequest) (*proto.TokensResponse, error) {}
+func (h *Handler) Refresh(_ context.Context, dto *proto.RefreshRequest) (*proto.TokensResponse, error) {
+	if dto == nil {
+		return nil, status.Error(codes.InvalidArgument, "request body is required")
+	}
+
+	if dto.RefreshToken == "" {
+		return nil, status.Error(codes.InvalidArgument, "refresh token is required")
+	}
+
+	resp, err := h.authService.Refresh(dto)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, err.Error())
+	}
+
+	return MapTokenPairToProtoTokenResponse(resp), nil
+}
