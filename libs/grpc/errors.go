@@ -8,7 +8,3 @@ import (
 var (
 	BodyIsRequired = status.Error(codes.InvalidArgument, "request body is required")
 )
-
-func FieldIsRequired(field string) error {
-	return status.Error(codes.InvalidArgument, field+" is required")
-}

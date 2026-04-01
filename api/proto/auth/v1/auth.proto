@@ -3,6 +3,7 @@ syntax = "proto3";
 package auth.v1;
 
 import "google/api/annotations.proto";
+import "buf/validate/validate.proto";
 
 option go_package = "github.com/deniSSTK/task-engine/gen/proto";
 
@@ -30,10 +31,26 @@ service AuthService {
 }
 
 message RegisterRequest {
-  string email = 1;
-  string password = 2;
-  string name = 3;
-  optional string second_name = 4;
+  string email = 1 [
+    (buf.validate.field).string.email = true,
+    (buf.validate.field).string.min_len = 5,
+    (buf.validate.field).string.max_len = 200
+  ];
+
+  string password = 2 [
+    (buf.validate.field).string.min_len = 8,
+    (buf.validate.field).string.max_len = 100
+  ];
+
+  string name = 3 [
+    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.max_len = 100
+  ];
+
+  optional string second_name = 4 [
+    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.max_len = 100
+  ];
 }
 
 message RegisterResponse {
@@ -41,8 +58,16 @@ message RegisterResponse {
 }
 
 message LoginRequest {
-  string email = 1;
-  string password = 2;
+  string email = 1 [
+    (buf.validate.field).string.email = true,
+    (buf.validate.field).string.min_len = 5,
+    (buf.validate.field).string.max_len = 200
+  ];
+
+  string password = 2 [
+    (buf.validate.field).string.min_len = 8,
+    (buf.validate.field).string.max_len = 100
+  ];
 }
 
 message LoginResponse {
@@ -50,7 +75,9 @@ message LoginResponse {
 }
 
 message RefreshRequest {
-  string refresh_token = 1;
+  string refresh_token = 1 [
+    (buf.validate.field).string.min_len = 1
+  ];
 }
 
 message RefreshResponse {

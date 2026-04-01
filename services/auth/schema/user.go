@@ -23,9 +23,12 @@ func (User) Mixin() []ent.Mixin {
 func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").
+			MinLen(1).
 			MaxLen(100),
 
-		field.String("second_name").MaxLen(100).
+		field.String("second_name").
+			MinLen(1).
+			MaxLen(100).
 			Optional().
 			NotEmpty(),
 
@@ -33,6 +36,8 @@ func (User) Fields() []ent.Field {
 			MaxLen(201),
 
 		field.String("email").
+			MinLen(5).
+			MaxLen(200).
 			Unique(),
 
 		field.String("password_hash"),
