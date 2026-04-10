@@ -3,7 +3,7 @@ package authRepo
 import (
 	"auth-service/ent"
 	"auth-service/ent/user"
-	"auth-service/internal/infra/db"
+	"auth-service/internal/infrastructure/db"
 	txUtils "auth-service/utils/tx-utils"
 	"context"
 	userDomain "libs/user"
@@ -91,10 +91,10 @@ func (r *Repository) UpdateUserLastLoginAtByEmail(
 func (r *Repository) GetUserIdAndRoleByEmail(
 	ctx context.Context,
 	email string,
-) (GetUserIdAndRoleByEmailRes, error) {
+) (GetUserIdAndRoleByEmailDto, error) {
 	client := txUtils.FromContext(ctx, r.client)
 
-	var res GetUserIdAndRoleByEmailRes
+	var res GetUserIdAndRoleByEmailDto
 
 	if err := client.User.
 		Query().
@@ -104,7 +104,30 @@ func (r *Repository) GetUserIdAndRoleByEmail(
 			user.FieldRole,
 		).
 		Scan(ctx, &res); err != nil {
-		return GetUserIdAndRoleByEmailRes{}, err
+		return GetUserIdAndRoleByEmailDto{}, err
+	}
+
+	return res, nil
+}
+
+func (r *Repository) GetUserStatusDto(
+	ctx context.Context,
+	userId uuid.UUID,
+) (GetUserStatusDto, error) {
+	client := txUtils.FromContext(ctx, r.client)
+
+	var res GetUserStatusDto
+
+	if err := client.User.
+		Query().
+		Where(user.IDEQ(userId)).
+		Select(
+			user.FieldStatus,
+			user.FieldDeletedAt,
+			user.FieldRole,
+		).
+		Scan(ctx, &res); err != nil {
+		return GetUserStatusDto{}, err
 	}
 
 	return res, nil

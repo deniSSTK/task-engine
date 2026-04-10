@@ -2,7 +2,7 @@ package db
 
 import (
 	"auth-service/ent"
-	"auth-service/internal/infra/config"
+	"auth-service/internal/infrastructure/config"
 	defErrors "libs/errors"
 	"libs/logger"
 

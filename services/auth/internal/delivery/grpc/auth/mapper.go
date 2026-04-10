@@ -1,7 +1,7 @@
 package authGrpc
 
 import (
-	"auth-service/internal/infra/security/jwt"
+	"auth-service/internal/infrastructure/security/jwt"
 	proto "proto/proto/auth/v1"
 )
 

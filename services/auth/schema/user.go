@@ -52,6 +52,13 @@ func (User) Fields() []ent.Field {
 				string(userDomain.User),
 			).
 			Default(string(userDomain.User)),
+
+		field.Enum("status").
+			Values(
+				string(userDomain.Active),
+				string(userDomain.Blocked),
+			).
+			Default(string(userDomain.Active)),
 	}
 }
 

@@ -2,7 +2,7 @@ package authApp
 
 import (
 	authGrpc "auth-service/internal/delivery/grpc/auth"
-	"auth-service/internal/infra/db/repository/auth"
+	"auth-service/internal/infrastructure/db/repository/auth"
 	authService "auth-service/internal/service/auth"
 
 	"go.uber.org/fx"

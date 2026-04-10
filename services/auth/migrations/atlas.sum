@@ -1,5 +1,6 @@
-h1:l+Qz/3BRrqAeye4gUBTlMsYv906wKUqWHErNKutDNtA=
+h1:RvXt8og+kDNcM7dZfu5gr/uG73m9xapk03Si6YNEdg4=
 20260330160648_add_user.sql h1:FpyYkVk19MJvSfA+O2kxJrEVhvb7OAfoFDwC4ArvlEM=
 20260330172410_set_user_last_login_at_optional.sql h1:S1H/O/E/Go354qceTcGmeQXebu0ugvabp+ljTrOHfqU=
 20260330210410_rename_password_to_password_hash.sql h1:/1JCIBIfIf5THgCqZE+7twP69cplyU1wxAsIUBiobEI=
 20260331183135_change_user_role_values.sql h1:Aj1MrM50ec/aeRoQ7DgffhumpMxVP+SoqTa03cLnOVw=
+20260409200200_add_user_status.sql h1:PR36pxXPO92WAMhgMz40hd5+8TzVd2uhNH2+sySr1lk=

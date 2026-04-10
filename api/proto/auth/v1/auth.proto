@@ -5,10 +5,14 @@ package auth.v1;
 import "google/api/annotations.proto";
 import "buf/validate/validate.proto";
 
+import "auth/v1/authz.proto";
+
 option go_package = "github.com/deniSSTK/task-engine/gen/proto";
 
 service AuthService {
   rpc Register (RegisterRequest) returns (RegisterResponse) {
+    option (auth.v1.auth_policy) = AUTH_POLICY_PUBLIC;
+
     option (google.api.http) = {
       post: "/v1/register"
       body: "*"
@@ -16,16 +20,28 @@ service AuthService {
   }
 
   rpc Login (LoginRequest) returns (LoginResponse) {
+    option (auth.v1.auth_policy) = AUTH_POLICY_PUBLIC;
+
     option (google.api.http) = {
       post: "/v1/login"
       body: "*"
     };
   }
 
-  rpc Refresh(RefreshRequest) returns (RefreshResponse) {
+  rpc Refresh (RefreshRequest) returns (RefreshResponse) {
+    option (auth.v1.auth_policy) = AUTH_POLICY_PUBLIC;
+
     option (google.api.http) = {
       post: "/v1/refresh"
       body: "*"
+    };
+  }
+
+  rpc Authorize(AuthorizeRequest) returns (AuthorizeResponse) {
+    option (auth.v1.auth_policy) = AUTH_POLICY_AUTHENTICATED;
+
+    option (google.api.http) = {
+      get: "/v1/me"
     };
   }
 }
@@ -88,4 +104,15 @@ message TokenDetails {
   string access_token = 1;
   string refresh_token = 2;
   int64 refresh_expires_at = 3;
+}
+
+message AuthorizeRequest {}
+
+message AuthorizeResponse {
+  AuthUser user = 1;
+}
+
+message AuthUser {
+  string id = 1;
+  string role = 2;
 }

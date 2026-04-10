@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	grpcUtils "libs/grpc"
+	"libs/logger"
 	proto "proto/proto/auth/v1"
 	"strings"
 
@@ -15,18 +16,26 @@ import (
 
 type Handler struct {
 	proto.UnimplementedAuthServiceServer
+	protoValidator protovalidate.Validator
+
 	authService *authService.Service
 
-	protoValidator protovalidate.Validator
+	log *logger.Logger
 }
 
 func NewHandler(
-	authService *authService.Service,
 	protoValidator protovalidate.Validator,
+
+	authService *authService.Service,
+
+	log *logger.Logger,
 ) *Handler {
 	return &Handler{
-		authService:    authService,
 		protoValidator: protoValidator,
+
+		authService: authService,
+
+		log: log,
 	}
 }
 
@@ -110,5 +119,24 @@ func (h *Handler) Refresh(ctx context.Context, dto *proto.RefreshRequest) (*prot
 
 	return &proto.RefreshResponse{
 		Tokens: MapTokenPairToProtoTokenDetail(resp),
+	}, nil
+}
+
+func (h *Handler) Authorize(ctx context.Context, _ *proto.AuthorizeRequest) (*proto.AuthorizeResponse, error) {
+	token, err := h.getAuthToken(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, err.Error())
+	}
+
+	payload, err := h.authService.Authorize(ctx, token)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, err.Error())
+	}
+
+	return &proto.AuthorizeResponse{
+		User: &proto.AuthUser{
+			Id:   payload.UserId.String(),
+			Role: string(payload.Role),
+		},
 	}, nil
 }

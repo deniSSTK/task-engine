@@ -2,15 +2,16 @@ package authService
 
 import (
 	"auth-service/ent"
-	"auth-service/internal/infra/config"
-	"auth-service/internal/infra/db/repository/auth"
-	"auth-service/internal/infra/security/jwt"
+	"auth-service/internal/infrastructure/config"
+	"auth-service/internal/infrastructure/db/repository/auth"
+	"auth-service/internal/infrastructure/security/jwt"
 	"auth-service/utils"
 	"context"
 	defErrors "libs/errors"
 	"libs/logger"
 	"libs/redis"
 	"libs/transaction"
+	userDomain "libs/user"
 
 	redisClient "github.com/redis/go-redis/v9"
 
@@ -191,5 +192,45 @@ func (s *Service) Refresh(ctx context.Context, dto *proto.RefreshRequest) (*jwt.
 		AccessToken:      accessToken,
 		RefreshToken:     dto.RefreshToken,
 		RefreshExpiredAt: refreshExpiresAt.Time,
+	}, nil
+}
+
+func (s *Service) Authorize(ctx context.Context, token string) (*jwt.TokenPayload, error) {
+	log := s.log.Named("Authorize")
+
+	payload, _, err := s.tokenManager.ParseTokenPayload(token, jwt.Access)
+	if err != nil {
+		log.Error(FailedToAuthenticateUser.Error(), zap.Error(err))
+		return nil, err
+	}
+
+	// TODO: get status from cache
+	status, err := s.authRepo.GetUserStatusDto(ctx, payload.UserId)
+	if err != nil {
+		log.Error(FailedToAuthenticateUser.Error(), zap.Error(err))
+		return nil, err
+	}
+
+	switch status.Status {
+	case userDomain.Active:
+		break
+	case userDomain.Blocked:
+		log.Error(UserBlocked.Error())
+		return &jwt.TokenPayload{}, UserBlocked
+	default:
+		log.Error(
+			FailedToAuthenticateUser.Error(),
+			zap.Error(UndefinedUserStatus),
+			zap.String("status", string(status.Status)))
+	}
+
+	if status.DeletedAt != nil {
+		log.Error(UserDeleted.Error())
+		return &jwt.TokenPayload{}, UserDeleted
+	}
+
+	return &jwt.TokenPayload{
+		UserId: payload.UserId,
+		Role:   status.Role,
 	}, nil
 }

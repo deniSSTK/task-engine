@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package auth.v1;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "github.com/deniSSTK/task-engine/gen/proto";
+
+enum AuthPolicy {
+  AUTH_POLICY_UNSPECIFIED = 0;
+  AUTH_POLICY_PUBLIC = 1;
+  AUTH_POLICY_AUTHENTICATED = 2;
+  AUTH_POLICY_ADMIN = 3;
+}
+
+extend google.protobuf.MethodOptions {
+  AuthPolicy auth_policy = 50001;
+}

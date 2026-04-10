@@ -1,7 +1,7 @@
 package security
 
 import (
-	"auth-service/internal/infra/security/jwt"
+	"auth-service/internal/infrastructure/security/jwt"
 
 	"go.uber.org/fx"
 )

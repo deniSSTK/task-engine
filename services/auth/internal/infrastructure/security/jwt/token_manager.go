@@ -1,7 +1,7 @@
 package jwt
 
 import (
-	"auth-service/internal/infra/config"
+	"auth-service/internal/infrastructure/config"
 	"libs/logger"
 	"time"
 

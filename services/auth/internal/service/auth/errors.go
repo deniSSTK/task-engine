@@ -15,4 +15,13 @@ var (
 
 	FailedToSaveUserSessionCache         = errors.New("failed to save user session in cache")
 	FailedToVerifySessionExistingInCache = errors.New("failed to verify session existing in cache")
+
+	FailedToAuthenticateUser = errors.New("failed to authenticate user")
+
+	// TODO: move to domain
+
+	UserBlocked = errors.New("user blocked")
+	UserDeleted = errors.New("user deleted")
+
+	UndefinedUserStatus = errors.New("undefined user status")
 )

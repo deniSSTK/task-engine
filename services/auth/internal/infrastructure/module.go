@@ -1,9 +1,9 @@
-package infra
+package infrastructure
 
 import (
-	"auth-service/internal/infra/config"
-	"auth-service/internal/infra/db"
-	"auth-service/internal/infra/security"
+	"auth-service/internal/infrastructure/config"
+	"auth-service/internal/infrastructure/db"
+	"auth-service/internal/infrastructure/security"
 	"libs/logger"
 	"libs/redis"
 

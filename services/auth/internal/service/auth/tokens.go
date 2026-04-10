@@ -1,7 +1,7 @@
 package authService
 
 import (
-	"auth-service/internal/infra/security/jwt"
+	"auth-service/internal/infrastructure/security/jwt"
 	"context"
 
 	"go.uber.org/zap"
