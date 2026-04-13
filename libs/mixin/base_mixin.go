@@ -1,11 +1,10 @@
 package mixin
 
 import (
-	entUtils "libs/ent-utils"
-
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
+	entUtils "github.com/deniSSTK/task-engine/libs/ent-utils"
 	"github.com/google/uuid"
 )
 

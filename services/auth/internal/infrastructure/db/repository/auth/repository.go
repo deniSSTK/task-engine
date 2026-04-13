@@ -1,15 +1,15 @@
 package authRepo
 
 import (
-	"auth-service/ent"
-	"auth-service/ent/user"
-	"auth-service/internal/infrastructure/db"
-	txUtils "auth-service/utils/tx-utils"
 	"context"
-	userDomain "libs/user"
-	proto "proto/proto/auth/v1"
 	"time"
 
+	"github.com/deniSSTK/task-engine/auth-service/ent"
+	"github.com/deniSSTK/task-engine/auth-service/ent/user"
+	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/db"
+	txUtils "github.com/deniSSTK/task-engine/auth-service/utils/tx-utils"
+	authv1 "github.com/deniSSTK/task-engine/gen/proto/auth/v1"
+	userDomain "github.com/deniSSTK/task-engine/libs/user"
 	"github.com/google/uuid"
 )
 
@@ -32,7 +32,7 @@ func (r *Repository) EmailExists(ctx context.Context, email string) (bool, error
 
 func (r *Repository) CreateUser(
 	ctx context.Context,
-	dto *proto.RegisterRequest,
+	dto *authv1.RegisterRequest, // TODO: change to dto NOT from proto generated file
 	passwordHash string,
 ) (uuid.UUID, userDomain.UserRole, error) {
 	client := txUtils.FromContext(ctx, r.client)

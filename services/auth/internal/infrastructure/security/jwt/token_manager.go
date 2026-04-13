@@ -1,10 +1,10 @@
 package jwt
 
 import (
-	"auth-service/internal/infrastructure/config"
-	"libs/logger"
 	"time"
 
+	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/config"
+	"github.com/deniSSTK/task-engine/libs/logger"
 	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
 )

@@ -1,9 +1,9 @@
 package authRepo
 
 import (
-	userDomain "libs/user"
 	"time"
 
+	userDomain "github.com/deniSSTK/task-engine/libs/user"
 	"github.com/google/uuid"
 )
 

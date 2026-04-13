@@ -1,17 +1,18 @@
 package authGrpc
 
 import (
-	grpcUtils "libs/grpc"
-	proto "proto/proto/auth/v1"
+	authv1 "github.com/deniSSTK/task-engine/gen/proto/auth/v1"
+	grpcUtils "github.com/deniSSTK/task-engine/libs/grpc"
 )
 
 type Server struct {
-	grpcServer  *grpcUtils.GrpcServer
+	grpcServer *grpcUtils.GrpcServer
+
 	authHandler *Handler
 }
 
 func NewServer(grpcServer *grpcUtils.GrpcServer, authHandler *Handler) *Server {
-	proto.RegisterAuthServiceServer(grpcServer, authHandler)
+	authv1.RegisterAuthServiceServer(grpcServer, authHandler)
 
 	return &Server{grpcServer, authHandler}
 }

@@ -1,11 +1,10 @@
 package db
 
 import (
-	"auth-service/ent"
-	"auth-service/internal/infrastructure/config"
-	defErrors "libs/errors"
-	"libs/logger"
-
+	"github.com/deniSSTK/task-engine/auth-service/ent"
+	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/config"
+	defErrors "github.com/deniSSTK/task-engine/libs/errors"
+	"github.com/deniSSTK/task-engine/libs/logger"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 )

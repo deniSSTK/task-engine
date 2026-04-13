@@ -1,9 +1,9 @@
 package authService
 
 import (
-	"auth-service/internal/infrastructure/security/jwt"
 	"context"
 
+	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/security/jwt"
 	"go.uber.org/zap"
 )
 

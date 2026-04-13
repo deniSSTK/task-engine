@@ -1,11 +1,10 @@
 package schema
 
 import (
-	"libs/mixin"
-	"libs/user"
-
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
+	"github.com/deniSSTK/task-engine/libs/mixin"
+	userDomain "github.com/deniSSTK/task-engine/libs/user"
 )
 
 // User holds the schema definition for the User entity.

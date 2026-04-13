@@ -1,7 +1,7 @@
 package main
 
 import (
-	"auth-service/internal/app"
+	"github.com/deniSSTK/task-engine/auth-service/internal/app"
 )
 
 func main() {

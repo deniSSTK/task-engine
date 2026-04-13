@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package auth.v1;
+package common.v1;
 
 import "google/protobuf/descriptor.proto";
 
-option go_package = "github.com/deniSSTK/task-engine/gen/proto";
+option go_package = "github.com/deniSSTK/task-engine/gen/proto/common/v1;commonv1";
 
 enum AuthPolicy {
   AUTH_POLICY_UNSPECIFIED = 0;

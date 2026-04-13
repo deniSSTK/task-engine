@@ -1,1 +1,1 @@
-module task-service
+module github.com/deniSSTK/task-engine/task-service

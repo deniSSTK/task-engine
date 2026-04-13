@@ -1,12 +1,12 @@
 go 1.26.1
 
 use (
+	gateway
+	gen
+
+	libs
 	services/auth
 	services/notification
 	services/task
 	services/workspace
-
-	libs
-	gen
-	gateway
 )

@@ -1,8 +1,7 @@
 package logger
 
 import (
-	"libs/env"
-
+	"github.com/deniSSTK/task-engine/libs/env"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

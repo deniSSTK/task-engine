@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"time"
 
-	"libs/env"
+	"github.com/deniSSTK/task-engine/libs/env"
 )
 
 type jwtConfig struct {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 	"net/http"
-	proto "proto/proto/auth/v1"
 
+	authv1 "github.com/deniSSTK/task-engine/gen/proto/auth/v1"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -69,7 +69,7 @@ func registerAPIGateway(ctx context.Context, mux *runtime.ServeMux, config *Conf
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	return proto.RegisterAuthServiceHandlerFromEndpoint(
+	return authv1.RegisterAuthServiceHandlerFromEndpoint(
 		ctx,
 		mux,
 		config.AuthHost+":"+config.AuthPort,

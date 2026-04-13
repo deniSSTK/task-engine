@@ -3,6 +3,7 @@ version: '3'
 tasks:
   buf:gen:
     cmds:
+      - rm -rf gen/proto
       - task buf:update
       - buf generate
 

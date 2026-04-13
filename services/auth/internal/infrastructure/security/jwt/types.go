@@ -1,9 +1,9 @@
 package jwt
 
 import (
-	userDomain "libs/user"
 	"time"
 
+	userDomain "github.com/deniSSTK/task-engine/libs/user"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )

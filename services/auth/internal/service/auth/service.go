@@ -1,21 +1,20 @@
 package authService
 
 import (
-	"auth-service/ent"
-	"auth-service/internal/infrastructure/config"
-	"auth-service/internal/infrastructure/db/repository/auth"
-	"auth-service/internal/infrastructure/security/jwt"
-	"auth-service/utils"
 	"context"
-	defErrors "libs/errors"
-	"libs/logger"
-	"libs/redis"
-	"libs/transaction"
-	userDomain "libs/user"
 
+	"github.com/deniSSTK/task-engine/auth-service/ent"
+	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/config"
+	authRepo "github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/db/repository/auth"
+	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/security/jwt"
+	"github.com/deniSSTK/task-engine/auth-service/utils"
+	authv1 "github.com/deniSSTK/task-engine/gen/proto/auth/v1"
+	defErrors "github.com/deniSSTK/task-engine/libs/errors"
+	"github.com/deniSSTK/task-engine/libs/logger"
+	"github.com/deniSSTK/task-engine/libs/redis"
+	"github.com/deniSSTK/task-engine/libs/transaction"
+	userDomain "github.com/deniSSTK/task-engine/libs/user"
 	redisClient "github.com/redis/go-redis/v9"
-
-	proto "proto/proto/auth/v1"
 
 	"go.uber.org/zap"
 )
@@ -55,7 +54,7 @@ func NewService(
 	}
 }
 
-func (s *Service) Register(ctx context.Context, dto *proto.RegisterRequest) (*jwt.TokenPair, error) {
+func (s *Service) Register(ctx context.Context, dto *authv1.RegisterRequest) (*jwt.TokenPair, error) {
 	log := s.log.Named("Register")
 
 	emailExists, err := s.authRepo.EmailExists(ctx, dto.Email)
@@ -110,7 +109,7 @@ func (s *Service) Register(ctx context.Context, dto *proto.RegisterRequest) (*jw
 	return tokens, nil
 }
 
-func (s *Service) Login(ctx context.Context, dto *proto.LoginRequest) (*jwt.TokenPair, error) {
+func (s *Service) Login(ctx context.Context, dto *authv1.LoginRequest) (*jwt.TokenPair, error) {
 	log := s.log.Named("Login")
 	email := dto.Email
 
@@ -158,7 +157,7 @@ func (s *Service) Login(ctx context.Context, dto *proto.LoginRequest) (*jwt.Toke
 	return tokens, nil
 }
 
-func (s *Service) Refresh(ctx context.Context, dto *proto.RefreshRequest) (*jwt.TokenPair, error) {
+func (s *Service) Refresh(ctx context.Context, dto *authv1.RefreshRequest) (*jwt.TokenPair, error) {
 	log := s.log.Named("Refresh")
 
 	tokenPayload, refreshExpiresAt, err := s.tokenManager.ParseTokenPayload(dto.RefreshToken, jwt.Refresh)
@@ -195,7 +194,7 @@ func (s *Service) Refresh(ctx context.Context, dto *proto.RefreshRequest) (*jwt.
 	}, nil
 }
 
-func (s *Service) Authorize(ctx context.Context, token string) (*jwt.TokenPayload, error) {
+func (s *Service) Verify(ctx context.Context, token string) (*jwt.TokenPayload, error) {
 	log := s.log.Named("Authorize")
 
 	payload, _, err := s.tokenManager.ParseTokenPayload(token, jwt.Access)

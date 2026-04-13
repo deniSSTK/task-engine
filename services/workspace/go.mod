@@ -1,1 +1,1 @@
-module workspace-service
+module github.com/deniSSTK/task-engine/workspace-service

@@ -1,9 +1,9 @@
 package db
 
 import (
-	"auth-service/ent"
-	"auth-service/internal/infrastructure/config"
-	"libs/logger"
+	"github.com/deniSSTK/task-engine/auth-service/ent"
+	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/config"
+	"github.com/deniSSTK/task-engine/libs/logger"
 )
 
 type Database struct {

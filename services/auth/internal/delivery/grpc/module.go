@@ -1,9 +1,8 @@
 package grpc
 
 import (
-	grpcUtils "libs/grpc"
-
 	"buf.build/go/protovalidate"
+	grpcUtils "github.com/deniSSTK/task-engine/libs/grpc"
 	"go.uber.org/fx"
 )
 
@@ -12,6 +11,8 @@ var Module = fx.Options(
 		grpcUtils.NewGrpcServer,
 
 		newValidator,
+
+		grpcUtils.NewUnaryInterceptor,
 	),
 )
 

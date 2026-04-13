@@ -2,10 +2,10 @@ package redis
 
 import (
 	"context"
-	"libs/env"
-	"libs/logger"
 	"time"
 
+	"github.com/deniSSTK/task-engine/libs/env"
+	"github.com/deniSSTK/task-engine/libs/logger"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
 	"go.uber.org/zap"

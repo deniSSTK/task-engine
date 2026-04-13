@@ -1,8 +1,7 @@
 package delivery
 
 import (
-	"auth-service/internal/delivery/grpc"
-
+	"github.com/deniSSTK/task-engine/auth-service/internal/delivery/grpc"
 	"go.uber.org/fx"
 )
 

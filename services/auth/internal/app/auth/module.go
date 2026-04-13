@@ -1,10 +1,9 @@
 package authApp
 
 import (
-	authGrpc "auth-service/internal/delivery/grpc/auth"
-	"auth-service/internal/infrastructure/db/repository/auth"
-	authService "auth-service/internal/service/auth"
-
+	authGrpc "github.com/deniSSTK/task-engine/auth-service/internal/delivery/grpc/auth"
+	authRepo "github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/db/repository/auth"
+	authService "github.com/deniSSTK/task-engine/auth-service/internal/service/auth"
 	"go.uber.org/fx"
 )
 

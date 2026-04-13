@@ -1,12 +1,11 @@
 package infrastructure
 
 import (
-	"auth-service/internal/infrastructure/config"
-	"auth-service/internal/infrastructure/db"
-	"auth-service/internal/infrastructure/security"
-	"libs/logger"
-	"libs/redis"
-
+	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/config"
+	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/db"
+	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/security"
+	"github.com/deniSSTK/task-engine/libs/logger"
+	"github.com/deniSSTK/task-engine/libs/redis"
 	"go.uber.org/fx"
 )
 

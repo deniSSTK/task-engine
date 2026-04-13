@@ -1,10 +1,11 @@
 package db
 
 import (
-	"auth-service/ent"
-	txUtils "auth-service/utils/tx-utils"
 	"context"
-	"libs/transaction"
+
+	"github.com/deniSSTK/task-engine/auth-service/ent"
+	txUtils "github.com/deniSSTK/task-engine/auth-service/utils/tx-utils"
+	"github.com/deniSSTK/task-engine/libs/transaction"
 )
 
 func newTransactionManager(db *Database) *transaction.Manager[*ent.Tx] {

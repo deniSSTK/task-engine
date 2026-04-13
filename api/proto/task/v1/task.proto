@@ -2,13 +2,13 @@ syntax = "proto3";
 
 package task.v1;
 
-import "auth/v1/authz.proto";
+import "common/v1/authz.proto";
 
-option go_package = "github.com/deniSSTK/task-engine/gen/proto";
+option go_package = "github.com/deniSSTK/task-engine/gen/proto/task/v1;taskv1";
 
 service TaskService {
   rpc CreateTask (CreateTaskRequest) returns (CreateTaskResponse) {
-    option (auth.v1.auth_policy) = AUTH_POLICY_AUTHENTICATED;
+    option (common.v1.auth_policy) = AUTH_POLICY_AUTHENTICATED;
   };
 }
 

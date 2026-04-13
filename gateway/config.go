@@ -1,7 +1,7 @@
 package main
 
 import (
-	"libs/env"
+	"github.com/deniSSTK/task-engine/libs/env"
 )
 
 type Config struct {

@@ -1,21 +1,22 @@
 package authGrpc
 
 import (
-	authService "auth-service/internal/service/auth"
 	"context"
 	"errors"
-	grpcUtils "libs/grpc"
-	"libs/logger"
-	proto "proto/proto/auth/v1"
 	"strings"
 
 	"buf.build/go/protovalidate"
+	authService "github.com/deniSSTK/task-engine/auth-service/internal/service/auth"
+	authv1 "github.com/deniSSTK/task-engine/gen/proto/auth/v1"
+	grpcAuth "github.com/deniSSTK/task-engine/libs/auth"
+	grpcUtils "github.com/deniSSTK/task-engine/libs/grpc"
+	"github.com/deniSSTK/task-engine/libs/logger"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type Handler struct {
-	proto.UnimplementedAuthServiceServer
+	authv1.UnimplementedAuthServiceServer
 	protoValidator protovalidate.Validator
 
 	authService *authService.Service
@@ -41,7 +42,7 @@ func NewHandler(
 
 // TODO: add error codes
 
-func (h *Handler) Register(ctx context.Context, dto *proto.RegisterRequest) (*proto.RegisterResponse, error) {
+func (h *Handler) Register(ctx context.Context, dto *authv1.RegisterRequest) (*authv1.RegisterResponse, error) {
 	if dto == nil {
 		return nil, grpcUtils.BodyIsRequired
 	}
@@ -72,12 +73,12 @@ func (h *Handler) Register(ctx context.Context, dto *proto.RegisterRequest) (*pr
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &proto.RegisterResponse{
+	return &authv1.RegisterResponse{
 		Tokens: MapTokenPairToProtoTokenDetail(resp),
 	}, nil
 }
 
-func (h *Handler) Login(ctx context.Context, dto *proto.LoginRequest) (*proto.LoginResponse, error) {
+func (h *Handler) Login(ctx context.Context, dto *authv1.LoginRequest) (*authv1.LoginResponse, error) {
 	if dto == nil {
 		return nil, grpcUtils.BodyIsRequired
 	}
@@ -98,12 +99,12 @@ func (h *Handler) Login(ctx context.Context, dto *proto.LoginRequest) (*proto.Lo
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &proto.LoginResponse{
+	return &authv1.LoginResponse{
 		Tokens: MapTokenPairToProtoTokenDetail(resp),
 	}, nil
 }
 
-func (h *Handler) Refresh(ctx context.Context, dto *proto.RefreshRequest) (*proto.RefreshResponse, error) {
+func (h *Handler) Refresh(ctx context.Context, dto *authv1.RefreshRequest) (*authv1.RefreshResponse, error) {
 	if dto == nil {
 		return nil, grpcUtils.BodyIsRequired
 	}
@@ -117,24 +118,24 @@ func (h *Handler) Refresh(ctx context.Context, dto *proto.RefreshRequest) (*prot
 		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
-	return &proto.RefreshResponse{
+	return &authv1.RefreshResponse{
 		Tokens: MapTokenPairToProtoTokenDetail(resp),
 	}, nil
 }
 
-func (h *Handler) Authorize(ctx context.Context, _ *proto.AuthorizeRequest) (*proto.AuthorizeResponse, error) {
-	token, err := h.getAuthToken(ctx)
+func (h *Handler) Verify(ctx context.Context, _ *authv1.VerifyRequest) (*authv1.VerifyResponse, error) {
+	token, err := grpcAuth.ExtractAuthToken(ctx, h.log)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
-	payload, err := h.authService.Authorize(ctx, token)
+	payload, err := h.authService.Verify(ctx, token)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
-	return &proto.AuthorizeResponse{
-		User: &proto.AuthUser{
+	return &authv1.VerifyResponse{
+		User: &authv1.AuthUser{
 			Id:   payload.UserId.String(),
 			Role: string(payload.Role),
 		},

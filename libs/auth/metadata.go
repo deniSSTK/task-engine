@@ -1,18 +1,17 @@
-package authGrpc
+package grpcAuth
 
 import (
 	"context"
-	defErrors "libs/errors"
 	"strings"
 
+	defErrors "github.com/deniSSTK/task-engine/libs/errors"
+	"github.com/deniSSTK/task-engine/libs/logger"
 	"google.golang.org/grpc/metadata"
 )
 
 var AuthorizationHeader = "authorization"
 
-func (h *Handler) getAuthToken(ctx context.Context) (string, error) {
-	log := h.log.Named("getAuthToken")
-
+func ExtractAuthToken(ctx context.Context, log *logger.Logger) (string, error) {
 	md, ok := metadata.FromOutgoingContext(ctx)
 	if !ok {
 		log.Error(defErrors.MissingMetadata.Error())

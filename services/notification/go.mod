@@ -1,1 +1,1 @@
-module notification-service
+module github.com/deniSSTK/task-engine/notification-service

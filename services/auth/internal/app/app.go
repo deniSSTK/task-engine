@@ -1,10 +1,9 @@
 package app
 
 import (
-	authApp "auth-service/internal/app/auth"
-	"auth-service/internal/delivery"
-	"auth-service/internal/infrastructure"
-
+	authApp "github.com/deniSSTK/task-engine/auth-service/internal/app/auth"
+	"github.com/deniSSTK/task-engine/auth-service/internal/delivery"
+	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure"
 	"go.uber.org/fx"
 )
 

@@ -1,9 +1,10 @@
 package txUtils
 
 import (
-	"auth-service/ent"
 	"context"
-	"libs/transaction"
+
+	"github.com/deniSSTK/task-engine/auth-service/ent"
+	"github.com/deniSSTK/task-engine/libs/transaction"
 )
 
 func WithTx(ctx context.Context, tx *ent.Tx) context.Context {
