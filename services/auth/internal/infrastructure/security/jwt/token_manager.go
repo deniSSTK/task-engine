@@ -10,11 +10,13 @@ import (
 )
 
 type TokenManager struct {
-	secret     []byte
-	issuer     string
+	secret []byte
+	issuer string
+
 	accessTTL  time.Duration
 	refreshTTL time.Duration
-	log        *logger.Logger
+
+	log *logger.Logger
 }
 
 var TokenMethod = jwt.SigningMethodHS256
