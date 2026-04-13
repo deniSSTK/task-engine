@@ -9,7 +9,8 @@ import (
 )
 
 func registerRoutes(mux *http.ServeMux, apiMux *runtime.ServeMux) {
-	mux.Handle("/", apiMux)
+	mux.Handle("/api/", http.StripPrefix("/api", apiMux))
+
 	mux.HandleFunc("/openapi.json", openAPISpecHandler)
 	mux.HandleFunc("/docs", redirectToDocs)
 	mux.HandleFunc("/docs/", swaggerUIHandler)

@@ -9,10 +9,10 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-var AuthorizationHeader = "authorization"
+const AuthorizationHeader = "authorization"
 
 func ExtractAuthToken(ctx context.Context, log *logger.Logger) (string, error) {
-	md, ok := metadata.FromOutgoingContext(ctx)
+	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		log.Error(defErrors.MissingMetadata.Error())
 		return "", defErrors.MissingMetadata
