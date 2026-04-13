@@ -91,13 +91,13 @@ func (tm *TokenManager) ParseTokenPayload(
 	tokenString string,
 	expectedType TokenType,
 ) (*TokenPayload, *jwt.NumericDate, error) {
-	claims := TokenClaims{}
+	claims := &TokenClaims{}
 
 	token, err := jwt.ParseWithClaims(
 		tokenString,
 		claims,
 		func(token *jwt.Token) (any, error) {
-			if token.Method != TokenMethod {
+			if token.Method.Alg() != TokenMethod.Alg() {
 				return nil, InvalidToken
 			}
 

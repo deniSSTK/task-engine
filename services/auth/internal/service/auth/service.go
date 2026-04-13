@@ -204,6 +204,8 @@ func (s *Service) Verify(ctx context.Context, token string) (*jwt.TokenPayload, 
 	}
 
 	// TODO: get status from cache
+
+	log.Info("userId", zap.String("userId", payload.UserId.String()))
 	status, err := s.authRepo.GetUserStatusDto(ctx, payload.UserId)
 	if err != nil {
 		log.Error(FailedToAuthenticateUser.Error(), zap.Error(err))

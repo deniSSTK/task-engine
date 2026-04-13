@@ -14,6 +14,6 @@ type GetUserIdAndRoleByEmailDto struct {
 
 type GetUserStatusDto struct {
 	Status    userDomain.UserStatus
-	DeletedAt *time.Time
+	DeletedAt *time.Time `sql:"deleted_at"`
 	Role      userDomain.UserRole
 }

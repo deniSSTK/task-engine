@@ -9,6 +9,7 @@ import (
 	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/db"
 	txUtils "github.com/deniSSTK/task-engine/auth-service/utils/tx-utils"
 	authv1 "github.com/deniSSTK/task-engine/gen/proto/auth/v1"
+	defErrors "github.com/deniSSTK/task-engine/libs/errors"
 	userDomain "github.com/deniSSTK/task-engine/libs/user"
 	"github.com/google/uuid"
 )
@@ -94,7 +95,7 @@ func (r *Repository) GetUserIdAndRoleByEmail(
 ) (GetUserIdAndRoleByEmailDto, error) {
 	client := txUtils.FromContext(ctx, r.client)
 
-	var res GetUserIdAndRoleByEmailDto
+	var res []GetUserIdAndRoleByEmailDto
 
 	if err := client.User.
 		Query().
@@ -107,7 +108,11 @@ func (r *Repository) GetUserIdAndRoleByEmail(
 		return GetUserIdAndRoleByEmailDto{}, err
 	}
 
-	return res, nil
+	if len(res) == 0 {
+		return GetUserIdAndRoleByEmailDto{}, defErrors.NotFound
+	}
+
+	return res[0], nil
 }
 
 func (r *Repository) GetUserStatusDto(
@@ -116,7 +121,7 @@ func (r *Repository) GetUserStatusDto(
 ) (GetUserStatusDto, error) {
 	client := txUtils.FromContext(ctx, r.client)
 
-	var res GetUserStatusDto
+	var res []GetUserStatusDto
 
 	if err := client.User.
 		Query().
@@ -130,5 +135,9 @@ func (r *Repository) GetUserStatusDto(
 		return GetUserStatusDto{}, err
 	}
 
-	return res, nil
+	if len(res) == 0 {
+		return GetUserStatusDto{}, defErrors.NotFound
+	}
+
+	return res[0], nil
 }
