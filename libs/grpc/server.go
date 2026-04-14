@@ -25,6 +25,8 @@ type GrpcServerParams struct {
 	UnaryInterceptors []grpc.UnaryServerInterceptor `group:"grpc_unary_interceptors"`
 }
 
+// TODO: add interceptor to log requestId
+
 func NewGrpcServer(params GrpcServerParams) *GrpcServer {
 	var opts []grpc.ServerOption
 

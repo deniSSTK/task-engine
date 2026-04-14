@@ -12,9 +12,12 @@ import (
 func loggingMiddleware(next http.Handler, log *logger.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		requestId := uuid.New().String()
+		requestId := r.Header.Get("X-Request-ID")
 
-		w.Header().Set("X-Request-Id", requestId)
+		if requestId == "" {
+			requestId = uuid.New().String()
+			log.Warn("request id is empty, generating new one", zap.String("request_id", requestId))
+		}
 
 		recorder := &statusRecorder{ResponseWriter: w, Status: http.StatusOK}
 
