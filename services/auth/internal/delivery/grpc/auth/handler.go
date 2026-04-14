@@ -11,6 +11,7 @@ import (
 	grpcAuth "github.com/deniSSTK/task-engine/libs/auth"
 	grpcUtils "github.com/deniSSTK/task-engine/libs/grpc"
 	"github.com/deniSSTK/task-engine/libs/logger"
+	userDomain "github.com/deniSSTK/task-engine/libs/user"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -137,7 +138,7 @@ func (h *Handler) Verify(ctx context.Context, _ *authv1.VerifyRequest) (*authv1.
 	return &authv1.VerifyResponse{
 		User: &authv1.AuthUser{
 			Id:   payload.UserId.String(),
-			Role: string(payload.Role),
+			Role: userDomain.MapRoleFromDomain(payload.Role),
 		},
 	}, nil
 }
