@@ -11,8 +11,7 @@ import (
 
 var Module = fx.Options(
 	fx.Provide(
-		config.NewConfig,
-		config.NewDefConfig,
+		config.NewConfigs,
 
 		logger.NewLogger,
 		redis.NewRedis,

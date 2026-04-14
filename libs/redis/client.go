@@ -15,7 +15,7 @@ type Redis struct {
 	client *redis.Client
 }
 
-func NewRedis(lc fx.Lifecycle, cfg *env.DefConfig, log *logger.Logger) *Redis {
+func NewRedis(lc fx.Lifecycle, cfg *env.ServiceConfig, log *logger.Logger) *Redis {
 	redisLog := log.Named("Redis")
 
 	client := redis.NewClient(&redis.Options{

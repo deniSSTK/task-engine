@@ -21,7 +21,7 @@ service AuthService {
     option (common.v1.auth_policy) = AUTH_POLICY_PUBLIC;
 
     option (google.api.http) = {
-      post: "/v1/register"
+      post: "/v1/auth/register"
       body: "*"
     };
   }
@@ -30,7 +30,7 @@ service AuthService {
     option (common.v1.auth_policy) = AUTH_POLICY_PUBLIC;
 
     option (google.api.http) = {
-      post: "/v1/login"
+      post: "/v1/auth/login"
       body: "*"
     };
   }
@@ -39,7 +39,7 @@ service AuthService {
     option (common.v1.auth_policy) = AUTH_POLICY_PUBLIC;
 
     option (google.api.http) = {
-      post: "/v1/refresh"
+      post: "/v1/auth/refresh"
       body: "*"
     };
   }
@@ -48,7 +48,7 @@ service AuthService {
     option (common.v1.auth_policy) = AUTH_POLICY_AUTHENTICATED;
 
     option (google.api.http) = {
-      get: "/v1/me"
+      get: "/v1/auth/me"
     };
   }
 }

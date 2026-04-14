@@ -1,20 +1,15 @@
 package main
 
 import (
-	"log/slog"
 	"net/http"
-	"os"
 	"time"
 
+	"github.com/deniSSTK/task-engine/libs/logger"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
-func init() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	slog.SetDefault(logger)
-}
-
-func loggingMiddleware(next http.Handler) http.Handler {
+func loggingMiddleware(next http.Handler, log *logger.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		requestId := uuid.New().String()
@@ -23,21 +18,21 @@ func loggingMiddleware(next http.Handler) http.Handler {
 
 		recorder := &statusRecorder{ResponseWriter: w, Status: http.StatusOK}
 
-		slog.Info("incoming request",
-			"request_id", requestId,
-			"method", r.Method,
-			"path", r.URL.Path,
-			"remote_ip", r.RemoteAddr,
+		log.Info("incoming request",
+			zap.String("request_id", requestId),
+			zap.String("method", r.Method),
+			zap.String("path", r.URL.Path),
+			zap.String("remote_ip", r.RemoteAddr),
 		)
 
 		next.ServeHTTP(recorder, r)
 
-		slog.Info("request completed",
-			"request_id", requestId,
-			"method", r.Method,
-			"path", r.URL.Path,
-			"status", recorder.Status,
-			"duration", time.Since(start).String(),
+		log.Info("request completed",
+			zap.String("request_id", requestId),
+			zap.String("method", r.Method),
+			zap.String("path", r.URL.Path),
+			zap.Int("status", recorder.Status),
+			zap.Duration("duration", time.Since(start)),
 		)
 	})
 }

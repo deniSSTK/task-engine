@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	authv1 "github.com/deniSSTK/task-engine/gen/proto/auth/v1"
 	grpcAuth "github.com/deniSSTK/task-engine/libs/auth"
+	"github.com/deniSSTK/task-engine/libs/env"
+	"github.com/deniSSTK/task-engine/libs/logger"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -20,10 +22,16 @@ func main() {
 		panic(err)
 	}
 
-	handler := loggingMiddleware(mux)
+	defCfg := env.NewDefConfig("GATEWAY_PORT", "../.env")
 
-	log.Printf("Starting server on port %s", config.AppPort)
-	log.Fatal(http.ListenAndServe(":"+config.AppPort, handler))
+	log := logger.NewLogger(defCfg)
+
+	handler := loggingMiddleware(mux, log)
+
+	log.Info("starting server", zap.String("port", config.AppPort))
+	if err = http.ListenAndServe(":"+config.AppPort, handler); err != nil {
+		log.Fatal("failed to listen server", zap.Error(err))
+	}
 }
 
 func newGatewayMux(ctx context.Context, config *Config) (*http.ServeMux, error) {

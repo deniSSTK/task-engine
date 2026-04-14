@@ -2,6 +2,8 @@ package env
 
 import (
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -42,4 +44,13 @@ func EnvMustDuration(key string) time.Duration {
 	}
 
 	return ttl
+}
+
+func ServiceEnvPath() string {
+	_, currentFile, _, ok := runtime.Caller(0)
+	if !ok {
+		panic(FailedToResolveConfigPath)
+	}
+
+	return filepath.Clean(filepath.Join(filepath.Dir(currentFile), "..", "..", "..", ".env"))
 }

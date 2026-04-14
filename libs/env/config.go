@@ -1,25 +1,14 @@
 package env
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
-	"strconv"
 
 	"github.com/joho/godotenv"
 )
 
-type redisConfig struct {
-	Addr     string
-	Username string
-	Password string
-	DB       int
-}
-
 type DefConfig struct {
-	DBUrl   string
-	Redis   redisConfig
 	ENV     Env
 	AppPort string
 }
@@ -28,46 +17,9 @@ func NewDefConfig(appPortName string, extraEnvFiles ...string) *DefConfig {
 	loadEnvFiles(extraEnvFiles...)
 
 	return &DefConfig{
-		DBUrl:   buildDatabaseURL(),
 		AppPort: EnvMust(appPortName),
-		Redis: redisConfig{
-			Addr:     buildRedisAddr(),
-			Username: GetEnv("REDIS_USERNAME", ""),
-			Password: GetEnv("REDIS_PASSWORD", ""),
-			DB:       buildRedisDB(),
-		},
-		ENV: Env(EnvMust("ENV")),
+		ENV:     Env(EnvMust("ENV")),
 	}
-}
-
-func buildDatabaseURL() string {
-	return fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
-		EnvMust("POSTGRES_USER"),
-		EnvMust("POSTGRES_PASSWORD"),
-		GetEnv("POSTGRES_HOST", "localhost"),
-		GetEnv("POSTGRES_PORT", "5432"),
-		EnvMust("DB_NAME"),
-		GetEnv("POSTGRES_SSLMODE", "disable"),
-	)
-}
-
-func buildRedisAddr() string {
-	return fmt.Sprintf(
-		"%s:%s",
-		GetEnv("REDIS_HOST", "localhost"),
-		GetEnv("REDIS_PORT", "6379"),
-	)
-}
-
-func buildRedisDB() int {
-	value := GetEnv("REDIS_DB", "0")
-	db, err := strconv.Atoi(value)
-	if err != nil {
-		panic(fmt.Sprintf("REDIS_DB must be an integer, got %q", value))
-	}
-
-	return db
 }
 
 func loadEnvFiles(extraEnvFiles ...string) {

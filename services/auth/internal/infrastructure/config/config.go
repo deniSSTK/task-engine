@@ -1,11 +1,10 @@
 package config
 
 import (
-	"path/filepath"
-	"runtime"
 	"time"
 
 	"github.com/deniSSTK/task-engine/libs/env"
+	"go.uber.org/fx"
 )
 
 type jwtConfig struct {
@@ -16,30 +15,35 @@ type jwtConfig struct {
 }
 
 type Config struct {
-	*env.DefConfig
+	*env.ServiceConfig
 
 	JWT jwtConfig
 }
 
-func NewConfig(defConfig *env.DefConfig) *Config {
-	return &Config{
-		DefConfig: defConfig,
+type ConfigsOut struct {
+	fx.Out
+
+	*Config
+	*env.DefConfig
+	*env.ServiceConfig
+}
+
+func NewConfigs() ConfigsOut {
+	defCfg := env.NewDefConfig("AUTH_PORT", env.ServiceEnvPath())
+
+	serviceConfig := env.NewServiceConfig(defCfg)
+
+	config := &Config{
+		ServiceConfig: env.NewServiceConfig(defCfg),
 
 		JWT: buildJwtConfig(),
 	}
-}
 
-func NewDefConfig() *env.DefConfig {
-	return env.NewDefConfig("AUTH_PORT", serviceEnvPath())
-}
-
-func serviceEnvPath() string {
-	_, currentFile, _, ok := runtime.Caller(0)
-	if !ok {
-		panic(env.FailedToResolveConfigPath)
+	return ConfigsOut{
+		Config:        config,
+		DefConfig:     defCfg,
+		ServiceConfig: serviceConfig,
 	}
-
-	return filepath.Clean(filepath.Join(filepath.Dir(currentFile), "..", "..", "..", ".env"))
 }
 
 func buildJwtConfig() jwtConfig {
