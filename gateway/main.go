@@ -20,8 +20,10 @@ func main() {
 		panic(err)
 	}
 
+	handler := loggingMiddleware(mux)
+
 	log.Printf("Starting server on port %s", config.AppPort)
-	log.Fatal(http.ListenAndServe(":"+config.AppPort, mux))
+	log.Fatal(http.ListenAndServe(":"+config.AppPort, handler))
 }
 
 func newGatewayMux(ctx context.Context, config *Config) (*http.ServeMux, error) {
