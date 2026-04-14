@@ -1,11 +1,5 @@
 package main
 
-var openAPISpecPaths = []string{
-	"openapi/api.swagger.json",
-	"gen/openapiv2/api.swagger.json",
-	"../gen/openapiv2/api.swagger.json",
-}
-
 const swaggerUIHTML = `<!doctype html>
 	<html lang="en">
 	<head>
@@ -20,7 +14,7 @@ const swaggerUIHTML = `<!doctype html>
 	  <script>
 		window.onload = function () {
 		  SwaggerUIBundle({
-			url: "/openapi.json",
+			url: "/api/openapi.json",
 			dom_id: "#swagger-ui"
 		  });
 		};

@@ -28,7 +28,12 @@ tasks:
       - task db:migrate:auth
 
   docker:infra:dev:
-    cmd: docker compose --env-file .env -f deployments/docker-compose.infra.yaml up -d
+    cmds:
+      - |
+        docker compose --env-file .env \
+        -f deployments/docker-compose.infra.yaml \
+        -f deployments/docker-compose.services.yaml \
+        up -d postgres redis kafka
 
   docker:down:
     cmds:
@@ -54,7 +59,7 @@ tasks:
         -f deployments/docker-compose.services.yaml \
         up -d
 
-  app:run:
+  run:app:
     cmds:
       - task docker:down
 

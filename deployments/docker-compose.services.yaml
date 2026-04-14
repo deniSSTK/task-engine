@@ -8,8 +8,10 @@ services:
     env_file: ../.env
     environment:
       AUTH_HOST: auth-service
-    ports:
+    expose:
       - "${GATEWAY_PORT}:8080"
+    networks:
+      - task-engine-network
 
   auth-service:
     build:
@@ -27,5 +29,7 @@ services:
       - gateway
       - postgres
       - redis
-    ports:
+    expose:
       - "${AUTH_PORT}:50001"
+    networks:
+      - task-engine-network

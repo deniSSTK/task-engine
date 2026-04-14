@@ -14,18 +14,16 @@ COPY gateway ./gateway
 
 RUN go work init ./gateway ./gen ./libs
 
+RUN mkdir -p ./gateway/openapi && \
+    cp ./gen/openapiv2/api.swagger.json ./gateway/openapi/api.swagger.json
+
 WORKDIR /app/gateway
 RUN go build -o /gateway .
 
 FROM alpine:3.22
-
 WORKDIR /app
-
 RUN apk add --no-cache ca-certificates tzdata
-
 COPY --from=builder /gateway /usr/local/bin/gateway
-COPY --from=builder /app/gen/openapiv2 ./openapi
 
 EXPOSE 8080
-
 CMD ["gateway"]
