@@ -10,6 +10,9 @@ import (
 //go:embed openapi/api.swagger.json
 var openAPISpec []byte
 
+//go:embed swagger/index.html
+var swaggerUIHTML []byte
+
 func registerRoutes(mux *http.ServeMux, apiMux *runtime.ServeMux) {
 	mux.Handle("/api/", http.StripPrefix("/api", apiMux))
 
@@ -29,5 +32,5 @@ func redirectToDocs(w http.ResponseWriter, r *http.Request) {
 
 func swaggerUIHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	_, _ = w.Write([]byte(swaggerUIHTML))
+	_, _ = w.Write(swaggerUIHTML)
 }
