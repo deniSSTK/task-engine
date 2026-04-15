@@ -44,11 +44,19 @@ service AuthService {
     };
   }
 
-  rpc Verify(VerifyRequest) returns (VerifyResponse) {
+  rpc Me(MeRequest) returns (MeResponse) {
     option (common.v1.auth_policy) = AUTH_POLICY_AUTHENTICATED;
 
     option (google.api.http) = {
       get: "/v1/auth/me"
+    };
+  }
+
+  rpc VerifyById(VerifyByIdRequest) returns (VerifyByIdResponse) {
+    option (common.v1.auth_policy) = AUTH_POLICY_AUTHENTICATED;
+
+    option (google.api.http) = {
+      get: "/v1/auth/verify/{id}"
     };
   }
 }
@@ -153,6 +161,28 @@ message RefreshResponse {
   TokenDetails tokens = 1;
 }
 
+message MeRequest {}
+
+message MeResponse {
+  AuthUser user = 1;
+}
+
+message VerifyByIdRequest {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+    json_schema: {
+      required: ["id"]
+    }
+  };
+
+  string id = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"32345854-f12d-4277-960f-eb3c82daa4da\""
+    }
+  ];
+}
+
+message VerifyByIdResponse {}
+
 message TokenDetails {
   string access_token = 1 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
@@ -171,12 +201,6 @@ message TokenDetails {
       example: "1776759974",
     }
   ];
-}
-
-message VerifyRequest {}
-
-message VerifyResponse {
-  AuthUser user = 1;
 }
 
 message AuthUser {

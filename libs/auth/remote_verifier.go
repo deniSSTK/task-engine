@@ -26,7 +26,7 @@ func NewRemoteVerifier(
 }
 
 func (rv *RemoteAuthVerifier) Verify(ctx context.Context) (*authv1.AuthUser, error) {
-	resp, err := rv.authClient.Verify(ctx, &authv1.VerifyRequest{})
+	resp, err := rv.authClient.Me(ctx, &authv1.MeRequest{})
 	if err != nil {
 		return nil, err
 	}

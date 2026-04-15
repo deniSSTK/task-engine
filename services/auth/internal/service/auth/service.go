@@ -14,6 +14,7 @@ import (
 	"github.com/deniSSTK/task-engine/libs/redis"
 	"github.com/deniSSTK/task-engine/libs/transaction"
 	userDomain "github.com/deniSSTK/task-engine/libs/user"
+	"github.com/google/uuid"
 	redisClient "github.com/redis/go-redis/v9"
 
 	"go.uber.org/zap"
@@ -194,8 +195,24 @@ func (s *Service) Refresh(ctx context.Context, dto *authv1.RefreshRequest) (*jwt
 	}, nil
 }
 
-func (s *Service) Verify(ctx context.Context, token string) (*jwt.TokenPayload, error) {
-	log := s.log.Named("Authorize")
+func (s *Service) VerifyById(ctx context.Context, id uuid.UUID) error {
+	log := s.log.Named("VerifyById")
+
+	// TODO: get status from cache
+	status, err := s.authRepo.GetUserStatusDto(ctx, id)
+	if err != nil {
+		log.Error(FailedToAuthenticateUser.Error(), zap.Error(err))
+		return err
+	}
+
+	if err = s.verifyStatus(&status); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Service) Me(ctx context.Context, token string) (*jwt.TokenPayload, error) {
+	log := s.log.Named("Me")
 
 	payload, _, err := s.tokenManager.ParseTokenPayload(token, jwt.Access)
 	if err != nil {
@@ -203,33 +220,41 @@ func (s *Service) Verify(ctx context.Context, token string) (*jwt.TokenPayload, 
 		return nil, err
 	}
 
-	// TODO: get status from cache
 	status, err := s.authRepo.GetUserStatusDto(ctx, payload.UserId)
 	if err != nil {
-		log.Error(FailedToAuthenticateUser.Error(), zap.Error(err))
 		return nil, err
 	}
 
-	switch status.Status {
+	if err = s.verifyStatus(&status); err != nil {
+		return nil, err
+	}
+
+	payload.Role = status.Role
+
+	return payload, nil
+}
+
+func (s *Service) verifyStatus(dto *authRepo.GetUserStatusDto) error {
+	log := s.log.Named("verifyStatus")
+
+	switch dto.Status {
 	case userDomain.Active:
 		break
 	case userDomain.Blocked:
 		log.Error(UserBlocked.Error())
-		return &jwt.TokenPayload{}, UserBlocked
+		return UserBlocked
 	default:
 		log.Error(
 			FailedToAuthenticateUser.Error(),
 			zap.Error(UndefinedUserStatus),
-			zap.String("status", string(status.Status)))
+			zap.String("status", string(dto.Status)))
+		return UndefinedUserStatus
 	}
 
-	if status.DeletedAt != nil {
+	if dto.DeletedAt != nil {
 		log.Error(UserDeleted.Error())
-		return &jwt.TokenPayload{}, UserDeleted
+		return UserDeleted
 	}
 
-	return &jwt.TokenPayload{
-		UserId: payload.UserId,
-		Role:   status.Role,
-	}, nil
+	return nil
 }

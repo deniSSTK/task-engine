@@ -27,7 +27,7 @@ func NewLocalVerifier(
 }
 
 func (lv *LocalAuthVerifier) Verify(ctx context.Context) (*authv1.AuthUser, error) {
-	res, err := lv.authHandler.Verify(ctx, &authv1.VerifyRequest{})
+	res, err := lv.authHandler.Me(ctx, &authv1.MeRequest{})
 	if err != nil {
 		return nil, err
 	}

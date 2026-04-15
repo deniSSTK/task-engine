@@ -12,6 +12,7 @@ import (
 	grpcUtils "github.com/deniSSTK/task-engine/libs/grpc"
 	"github.com/deniSSTK/task-engine/libs/logger"
 	userDomain "github.com/deniSSTK/task-engine/libs/user"
+	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -43,7 +44,10 @@ func NewHandler(
 
 // TODO: add error codes
 
-func (h *Handler) Register(ctx context.Context, dto *authv1.RegisterRequest) (*authv1.RegisterResponse, error) {
+func (h *Handler) Register(
+	ctx context.Context,
+	dto *authv1.RegisterRequest,
+) (*authv1.RegisterResponse, error) {
 	if dto == nil {
 		return nil, grpcUtils.BodyIsRequired
 	}
@@ -79,7 +83,10 @@ func (h *Handler) Register(ctx context.Context, dto *authv1.RegisterRequest) (*a
 	}, nil
 }
 
-func (h *Handler) Login(ctx context.Context, dto *authv1.LoginRequest) (*authv1.LoginResponse, error) {
+func (h *Handler) Login(
+	ctx context.Context,
+	dto *authv1.LoginRequest,
+) (*authv1.LoginResponse, error) {
 	if dto == nil {
 		return nil, grpcUtils.BodyIsRequired
 	}
@@ -105,7 +112,10 @@ func (h *Handler) Login(ctx context.Context, dto *authv1.LoginRequest) (*authv1.
 	}, nil
 }
 
-func (h *Handler) Refresh(ctx context.Context, dto *authv1.RefreshRequest) (*authv1.RefreshResponse, error) {
+func (h *Handler) Refresh(
+	ctx context.Context,
+	dto *authv1.RefreshRequest,
+) (*authv1.RefreshResponse, error) {
 	if dto == nil {
 		return nil, grpcUtils.BodyIsRequired
 	}
@@ -124,21 +134,49 @@ func (h *Handler) Refresh(ctx context.Context, dto *authv1.RefreshRequest) (*aut
 	}, nil
 }
 
-func (h *Handler) Verify(ctx context.Context, _ *authv1.VerifyRequest) (*authv1.VerifyResponse, error) {
+func (h *Handler) Me(
+	ctx context.Context,
+	_ *authv1.MeRequest,
+) (*authv1.MeResponse, error) {
 	token, err := grpcAuth.ExtractAuthToken(ctx, h.log)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
-	payload, err := h.authService.Verify(ctx, token)
+	payload, err := h.authService.Me(ctx, token)
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
-	return &authv1.VerifyResponse{
+	return &authv1.MeResponse{
 		User: &authv1.AuthUser{
 			Id:   payload.UserId.String(),
 			Role: userDomain.MapRoleFromDomain(payload.Role),
 		},
 	}, nil
+}
+
+func (h *Handler) VerifyById(
+	ctx context.Context,
+	dto *authv1.VerifyByIdRequest,
+) (*authv1.VerifyByIdResponse, error) {
+	if dto == nil {
+		return nil, grpcUtils.BodyIsRequired
+	}
+
+	if err := h.protoValidator.Validate(dto); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	id, err := uuid.Parse(dto.Id)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	if err = h.authService.VerifyById(ctx, id); err != nil {
+		// TODO: change error code to Unauthenticated OR NotFound
+		return nil, status.Error(codes.NotFound, err.Error())
+	}
+
+	return &authv1.VerifyByIdResponse{}, nil
 }
