@@ -35,7 +35,7 @@ func NewGrpcServer(params GrpcServerParams) *GrpcServer {
 	}
 
 	grpcServer := &GrpcServer{
-		Server: grpc.NewServer(),
+		Server: grpc.NewServer(opts...),
 	}
 
 	lis, err := net.Listen("tcp", ":"+params.DefCfg.AppPort)

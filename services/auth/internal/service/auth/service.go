@@ -196,13 +196,13 @@ func (s *Service) Refresh(ctx context.Context, dto *authv1.RefreshRequest) (*jwt
 		return nil, err
 	}
 
-	sessionExists, err := s.isSessionExists(ctx, tokenPayload.UserId.String())
+	sessionValid, err := s.isSessionValid(ctx, tokenPayload.UserId, dto.RefreshToken)
 	if err != nil {
 		log.Error(FailedToVerifySessionExistingInCache.Error(), zap.Error(err))
 		return nil, err
 	}
 
-	if !sessionExists {
+	if !sessionValid {
 		log.Error(FailedToVerifySessionExistingInCache.Error())
 		return nil, FailedToVerifySessionExistingInCache
 	}
@@ -303,6 +303,23 @@ func (s *Service) UpdateUser(
 	}
 
 	return user, nil
+}
+
+func (s *Service) Logout(
+	ctx context.Context,
+	userId uuid.UUID,
+) error {
+	// TODO: when deviceId will be implemented delete by deviceId + userId
+
+	if err := s.authRepo.DeleteUserSession(ctx, userId); err != nil {
+		return err
+	}
+
+	if err := s.deleteSessionFromCache(ctx, userId); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *Service) verifyStatus(dto *authRepo.GetUserStatusDto) error {

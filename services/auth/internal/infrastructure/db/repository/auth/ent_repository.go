@@ -6,6 +6,7 @@ import (
 
 	"github.com/deniSSTK/task-engine/auth-service/ent"
 	"github.com/deniSSTK/task-engine/auth-service/ent/user"
+	"github.com/deniSSTK/task-engine/auth-service/ent/usersession"
 	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/db"
 	userMapper "github.com/deniSSTK/task-engine/auth-service/internal/mappers/user"
 	txUtils "github.com/deniSSTK/task-engine/auth-service/utils/tx-utils"
@@ -175,4 +176,17 @@ func (r *EntRepository) CreateUserSession(
 		SetNillableUserAgent(dto.UserAgent).
 		Exec(ctx)
 
+}
+
+func (r *EntRepository) DeleteUserSession(
+	ctx context.Context,
+	userId uuid.UUID,
+) error {
+	client := txUtils.FromContext(ctx, r.client)
+
+	return client.UserSession.
+		Update().
+		Where(usersession.UserIDEQ(userId)).
+		SetDeletedAt(time.Now()).
+		Exec(ctx)
 }

@@ -79,8 +79,16 @@ func (w *AppErrorWrapper) BodyIsRequired() error {
 	return w.New(codes.InvalidArgument, defErrors.BodyIsRequired, reasons.BodyIsRequired)
 }
 
-func (w *AppErrorWrapper) Unauthenticated() error {
+func (w *AppErrorWrapper) Unauthenticated(rawErr error) error {
+	if rawErr != nil {
+		return w.New(codes.Unauthenticated, rawErr, reasons.AuthenticationFailed)
+	}
+
 	return w.New(codes.Unauthenticated, defErrors.UserUnauthenticated, reasons.AuthenticationFailed)
+}
+
+func (w *AppErrorWrapper) PermissionDenied() error {
+	return w.New(codes.PermissionDenied, defErrors.PermissionDenied, reasons.PermissionDenied)
 }
 
 func (w *AppErrorWrapper) ValidationFailed(err error) error {

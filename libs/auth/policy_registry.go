@@ -6,6 +6,7 @@ import (
 
 	commonv1 "github.com/deniSSTK/task-engine/gen/proto/common/v1"
 	defErrors "github.com/deniSSTK/task-engine/libs/errors"
+	grpcErr "github.com/deniSSTK/task-engine/libs/grpc/error"
 	"github.com/deniSSTK/task-engine/libs/logger"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -16,15 +17,20 @@ import (
 type PolicyRegistry struct {
 	methods map[string]commonv1.AuthPolicy
 
-	log *logger.Logger
+	log          *logger.Logger
+	errorWrapper *grpcErr.AppErrorWrapper
 }
 
-func NewPolicyRegistry(log *logger.Logger, files ...protoreflect.FileDescriptor) *PolicyRegistry {
+func NewPolicyRegistry(
+	log *logger.Logger,
+	errorWrapper *grpcErr.AppErrorWrapper,
+	files ...protoreflect.FileDescriptor) *PolicyRegistry {
 	log = log.Named("PolicyRegistry")
 
 	r := &PolicyRegistry{
-		methods: make(map[string]commonv1.AuthPolicy),
-		log:     log,
+		methods:      make(map[string]commonv1.AuthPolicy),
+		log:          log,
+		errorWrapper: errorWrapper,
 	}
 
 	for _, file := range files {

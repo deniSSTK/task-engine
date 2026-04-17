@@ -6,15 +6,14 @@ import (
 	commonv1 "github.com/deniSSTK/task-engine/gen/proto/common/v1"
 	defErrors "github.com/deniSSTK/task-engine/libs/errors"
 	userDomain "github.com/deniSSTK/task-engine/libs/user"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 )
 
 type authUserCtxKey struct{}
 
-func WithAuthUser(ctx context.Context, authUser *userDomain.AuthUser) context.Context {
+func WithAuthUser(ctx context.Context, authUser userDomain.AuthUser) context.Context {
 	return context.WithValue(ctx, authUserCtxKey{}, authUser)
 }
 
@@ -33,27 +32,32 @@ func UnaryAuthInterceptor(
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler,
 	) (any, error) {
-		policy := registry.MustGet(info.FullMethod)
+		log := registry.log.Named("UnaryAuthInterceptor")
+
+		policy := registry.MustGet(info.FullMethod) // TODO: I think it's not a good idea to panic here
 
 		if policy == commonv1.AuthPolicy_AUTH_POLICY_PUBLIC {
 			return handler(ctx, req)
 		}
 
 		if _, ok := metadata.FromIncomingContext(ctx); !ok {
-			return nil, status.Error(codes.Unauthenticated, defErrors.MissingMetadata.Error())
+			log.Error("missing metadata")
+			return nil, registry.errorWrapper.Unauthenticated(defErrors.MissingMetadata)
 		}
 
 		authUser, err := verifier.Verify(ctx)
 		if err != nil {
-			return nil, status.Error(codes.Unauthenticated, err.Error())
+			log.Error("failed to verify", zap.Error(err))
+			return nil, registry.errorWrapper.Unauthenticated(err)
 		}
 
 		if policy == commonv1.AuthPolicy_AUTH_POLICY_ADMIN &&
 			authUser.Role != userDomain.RoleUser {
-			return nil, status.Error(codes.Unauthenticated, AdminOnly.Error())
+			log.Error("admin only")
+			return nil, registry.errorWrapper.PermissionDenied()
 		}
 
-		ctx = WithAuthUser(ctx, authUser)
+		ctx = WithAuthUser(ctx, *authUser)
 
 		return handler(ctx, req)
 	}

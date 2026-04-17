@@ -28,9 +28,10 @@ func (s *Service) generateAndStoreTokens(
 	}
 
 	cachePayload := UserSessionCachePayload{
-		UserId:       payload.UserId,
-		RefreshToken: tokens.RefreshToken,
-		TTL:          s.config.JWT.RefreshTokenTTL,
+		UserId:           payload.UserId,
+		RefreshTokenHash: tokens.RefreshToken,
+		AccessTokenHash:  tokens.AccessToken,
+		TTL:              s.config.JWT.RefreshTokenTTL,
 	}
 
 	if err = s.saveUserSessionCache(ctx, &cachePayload); err != nil {
@@ -40,7 +41,5 @@ func (s *Service) generateAndStoreTokens(
 
 	return tokens, nil
 }
-
-// TODO: delete token in cache
 
 // TODO: validate token in cache

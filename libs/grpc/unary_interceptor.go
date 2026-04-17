@@ -9,7 +9,7 @@ import (
 type UnaryInterceptorOut struct {
 	fx.Out
 
-	Interceptor grpc.UnaryServerInterceptor `group:"grpc_unary_interceptor"`
+	Interceptor grpc.UnaryServerInterceptor `group:"grpc_unary_interceptors"`
 }
 
 // TODO: rename to NewAuthInterceptor and return UnaryAuthInterceptorOut

@@ -59,6 +59,8 @@ tasks:
         -f deployments/docker-compose.services.yaml \
         up -d
 
+  # TODO: add docker:restart
+
   run:app:
     cmds:
       - task docker:down

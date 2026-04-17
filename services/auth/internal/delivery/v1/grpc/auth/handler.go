@@ -15,6 +15,7 @@ import (
 	"github.com/deniSSTK/task-engine/libs/reasons"
 	userDomain "github.com/deniSSTK/task-engine/libs/user"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
@@ -75,7 +76,7 @@ func (h *Handler) Register(
 		return nil, h.errorWrapper.ValidationFailed(err)
 	}
 
-	ip, userAgent := h.GetIpAndUserAgent(ctx)
+	ip, userAgent := h.getIpAndUserAgent(ctx)
 
 	resp, err := h.authService.Register(ctx, dto, ip, userAgent)
 	if err != nil {
@@ -106,7 +107,7 @@ func (h *Handler) Login(
 		return nil, h.errorWrapper.ValidationFailed(err)
 	}
 
-	ip, userAgent := h.GetIpAndUserAgent(ctx)
+	ip, userAgent := h.getIpAndUserAgent(ctx)
 
 	resp, err := h.authService.Login(ctx, dto, ip, userAgent)
 	if err != nil {
@@ -165,7 +166,7 @@ func (h *Handler) Me(
 	role, ok := userDomain.MapRoleFromDomain(payload.Role)
 	if !ok {
 		return nil,
-			h.errorWrapper.Unauthenticated()
+			h.errorWrapper.Unauthenticated(nil)
 	}
 
 	return &authv1.MeResponse{
@@ -218,7 +219,7 @@ func (h *Handler) UpdateUser(
 
 	authUser, ok := grpcAuth.AuthUserFromContext(ctx)
 	if !ok {
-		return nil, h.errorWrapper.Unauthenticated()
+		return nil, h.errorWrapper.Unauthenticated(nil)
 	}
 
 	rawUser, err := h.authService.UpdateUser(ctx, authUser.Id, dto)
@@ -240,12 +241,26 @@ func (h *Handler) Logout(
 	ctx context.Context,
 	_ *authv1.LogoutRequest,
 ) (*authv1.LogoutResponse, error) {
-	// todo: implement
+	log := h.log.Named("Logout")
+
+	authUser, ok := grpcAuth.AuthUserFromContext(ctx)
+	if !ok {
+		log.Error("AuthUser not found in context")
+		return nil, h.errorWrapper.Unauthenticated(nil)
+	}
+
+	log.Info("Logout", zap.String("user_id", authUser.Id.String()))
+
+	if err := h.authService.Logout(ctx, authUser.Id); err != nil {
+		return nil, h.errorWrapper.InternalServerError(err)
+	}
+
+	log.Info("Logout success", zap.String("user_id", authUser.Id.String()))
 
 	return &authv1.LogoutResponse{}, nil
 }
 
-func (h *Handler) GetIpAndUserAgent(ctx context.Context) (*string, *string) {
+func (h *Handler) getIpAndUserAgent(ctx context.Context) (*string, *string) {
 	var ip, userAgent *string
 
 	ipRaw, ok := peer.FromContext(ctx)

@@ -18,4 +18,6 @@ type Repository interface {
 
 	UpdateUser(ctx context.Context, dto *UpdateUser) (*userDomain.User, error)
 	UpdateUserLastLoginAtByEmail(ctx context.Context, email string) error
+
+	DeleteUserSession(ctx context.Context, userId uuid.UUID) error
 }

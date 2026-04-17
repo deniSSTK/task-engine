@@ -5,10 +5,10 @@ import "errors"
 var (
 	BodyIsRequired      = errors.New("body is required")
 	UserUnauthenticated = errors.New("user is not authenticated")
+	PermissionDenied    = errors.New("permission denied")
 
-	MissingMetadata      = errors.New("missing metadata")
-	MissingMetadataValue = errors.New("missing metadata value")
-
+	MissingMetadata           = errors.New("missing metadata")
+	MissingMetadataValue      = errors.New("missing metadata value")
 	MetadataOptionUnspecified = errors.New("metadata option unspecified")
 
 	MethodOptionsNotFound = errors.New("method options not found")
