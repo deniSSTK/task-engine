@@ -84,18 +84,24 @@ func (s *Service) Register(ctx context.Context, dto *authv1.RegisterRequest) (*j
 
 	if err = s.transactionManager.WithTransaction(ctx, func(txCtx context.Context) error {
 
-		userId, role, txErr := s.authRepo.CreateUser(txCtx, dto, passwordHash)
+		createUserPayload := &authRepo.CreateUserDto{
+			Email:        dto.Email,
+			PasswordHash: passwordHash,
+			Name:         dto.Name,
+			SecondName:   dto.SecondName,
+		}
+		userId, role, txErr := s.authRepo.CreateUser(txCtx, createUserPayload)
 		if txErr != nil {
 			log.Error(FailedToCreateUser.Error(), zap.Error(txErr))
 			return txErr
 		}
 
-		payload := jwt.TokenPayload{
+		tokenPayload := jwt.TokenPayload{
 			UserId: userId,
 			Role:   role,
 		}
 
-		tokens, txErr = s.generateAndStoreTokens(txCtx, payload)
+		tokens, txErr = s.generateAndStoreTokens(txCtx, tokenPayload)
 		if txErr != nil {
 			log.Error(FailedToGenerateTokens.Error(), zap.Error(txErr))
 			return FailedToGenerateTokens

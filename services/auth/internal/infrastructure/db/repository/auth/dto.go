@@ -25,6 +25,13 @@ type UpdateUser struct {
 	SecondName **string
 }
 
+type CreateUserDto struct {
+	Email        string
+	PasswordHash string
+	Name         string
+	SecondName   *string
+}
+
 func (u *UpdateUser) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	enc.AddString("id", u.Id.String())
 
