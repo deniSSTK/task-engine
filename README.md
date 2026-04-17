@@ -1,1 +1,1 @@
-docs http://localhost:8080/docs/
+docs http://localhost/api/docs/
