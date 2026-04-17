@@ -22,7 +22,6 @@ enum UserStatus {
   USER_STATUS_BLOCKED = 2;
 }
 
-// TODO: add critical validation
 // TODO: add uuid validation
 
 service AuthService {
