@@ -3,7 +3,6 @@ package grpcAuth
 import (
 	"context"
 
-	authv1 "github.com/deniSSTK/task-engine/gen/proto/auth/v1"
 	commonv1 "github.com/deniSSTK/task-engine/gen/proto/common/v1"
 	defErrors "github.com/deniSSTK/task-engine/libs/errors"
 	userDomain "github.com/deniSSTK/task-engine/libs/user"
@@ -15,12 +14,12 @@ import (
 
 type authUserCtxKey struct{}
 
-func WithAuthUser(ctx context.Context, authUser *authv1.AuthUser) context.Context {
+func WithAuthUser(ctx context.Context, authUser *userDomain.AuthUser) context.Context {
 	return context.WithValue(ctx, authUserCtxKey{}, authUser)
 }
 
-func AuthUserFromContext(ctx context.Context) (*authv1.AuthUser, bool) {
-	authUser, ok := ctx.Value(authUserCtxKey{}).(authv1.AuthUser)
+func AuthUserFromContext(ctx context.Context) (*userDomain.AuthUser, bool) {
+	authUser, ok := ctx.Value(authUserCtxKey{}).(userDomain.AuthUser)
 	return &authUser, ok
 }
 
@@ -50,7 +49,7 @@ func UnaryAuthInterceptor(
 		}
 
 		if policy == commonv1.AuthPolicy_AUTH_POLICY_ADMIN &&
-			userDomain.UserRole(authUser.Role) != userDomain.Admin {
+			authUser.Role != userDomain.RoleUser {
 			return nil, status.Error(codes.Unauthenticated, AdminOnly.Error())
 		}
 

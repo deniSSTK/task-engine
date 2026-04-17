@@ -9,10 +9,12 @@ import (
 	authService "github.com/deniSSTK/task-engine/auth-service/internal/service/auth"
 	authv1 "github.com/deniSSTK/task-engine/gen/proto/auth/v1"
 	grpcAuth "github.com/deniSSTK/task-engine/libs/auth"
+	defErrors "github.com/deniSSTK/task-engine/libs/errors"
 	grpcUtils "github.com/deniSSTK/task-engine/libs/grpc"
 	"github.com/deniSSTK/task-engine/libs/logger"
 	userDomain "github.com/deniSSTK/task-engine/libs/user"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -138,20 +140,32 @@ func (h *Handler) Me(
 	ctx context.Context,
 	_ *authv1.MeRequest,
 ) (*authv1.MeResponse, error) {
+	log := h.log.Named("Me")
+
 	token, err := grpcAuth.ExtractAuthToken(ctx, h.log)
 	if err != nil {
+		log.Error(err.Error())
 		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
 
 	payload, err := h.authService.Me(ctx, token)
 	if err != nil {
+		log.Error(err.Error())
 		return nil, status.Error(codes.Unauthenticated, err.Error())
+	}
+
+	role, ok := userDomain.MapRoleFromDomain(payload.Role)
+	if !ok {
+		log.Error(defErrors.UserUnauthenticated.Error(),
+			zap.String("reason", InvalidRole.Error()),
+		)
+		return nil, status.Error(codes.Unauthenticated, defErrors.UserUnauthenticated.Error())
 	}
 
 	return &authv1.MeResponse{
 		User: &authv1.AuthUser{
 			Id:   payload.UserId.String(),
-			Role: userDomain.MapRoleFromDomain(payload.Role),
+			Role: role,
 		},
 	}, nil
 }
@@ -179,4 +193,36 @@ func (h *Handler) VerifyById(
 	}
 
 	return &authv1.VerifyByIdResponse{}, nil
+}
+
+func (h *Handler) UpdateUser(
+	ctx context.Context,
+	dto *authv1.UpdateUserRequest,
+) (*authv1.UpdateUserResponse, error) {
+	if dto == nil {
+		return nil, grpcUtils.BodyIsRequired
+	}
+
+	if err := h.protoValidator.Validate(dto); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	authUser, ok := grpcAuth.AuthUserFromContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, defErrors.UserUnauthenticated.Error())
+	}
+
+	rawUser, err := h.authService.UpdateUser(ctx, authUser.Id, dto)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	user, ok := MapDomainUserToProtoUser(rawUser)
+	if !ok {
+		return nil, status.Error(codes.Internal, defErrors.FailedMap.Error())
+	}
+
+	return &authv1.UpdateUserResponse{
+		User: user,
+	}, nil
 }

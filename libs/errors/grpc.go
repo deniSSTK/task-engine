@@ -3,6 +3,8 @@ package defErrors
 import "errors"
 
 var (
+	UserUnauthenticated = errors.New("user is not authenticated")
+
 	MissingMetadata      = errors.New("missing metadata")
 	MissingMetadataValue = errors.New("missing metadata value")
 

@@ -5,7 +5,7 @@ package auth.v1;
 import "google/api/annotations.proto";
 import "buf/validate/validate.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
-
+import "google/protobuf/field_mask.proto";
 import "common/v1/authz.proto";
 
 option go_package = "github.com/deniSSTK/task-engine/gen/proto/auth/v1;authv1";
@@ -16,6 +16,15 @@ enum UserRole {
   USER_ROLE_ADMIN = 2;
 }
 
+enum UserStatus {
+  USER_STATUS_UNSPECIFIED = 0;
+  USER_STATUS_ACTIVE = 1;
+  USER_STATUS_BLOCKED = 2;
+}
+
+// TODO: add critical validation
+// TODO: add uuid validation
+
 service AuthService {
   rpc Register (RegisterRequest) returns (RegisterResponse) {
     option (common.v1.auth_policy) = AUTH_POLICY_PUBLIC;
@@ -25,7 +34,7 @@ service AuthService {
       body: "*"
     };
   }
-
+  
   rpc Login (LoginRequest) returns (LoginResponse) {
     option (common.v1.auth_policy) = AUTH_POLICY_PUBLIC;
 
@@ -57,6 +66,15 @@ service AuthService {
 
     option (google.api.http) = {
       get: "/v1/auth/verify/{id}"
+    };
+  }
+
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {
+    option (common.v1.auth_policy) = AUTH_POLICY_AUTHENTICATED;
+
+    option (google.api.http) = {
+      patch: "/v1/auth/user",
+      body: "*"
     };
   }
 }
@@ -183,6 +201,36 @@ message VerifyByIdRequest {
 
 message VerifyByIdResponse {}
 
+message UpdateUserRequest {
+  google.protobuf.FieldMask update_mask = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      read_only: true,
+    }
+  ];
+
+  optional string name = 2 [
+    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.max_len = 100,
+
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"Denis\""
+    }
+  ];
+
+  optional string second_name = 3 [
+    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.max_len = 100,
+
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"Tkachenko\""
+    }
+  ];
+}
+
+message UpdateUserResponse {
+  User user = 1;
+}
+
 message TokenDetails {
   string access_token = 1 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
@@ -213,6 +261,56 @@ message AuthUser {
   UserRole role = 2 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       example: "\"USER\"",
+    }
+  ];
+}
+
+message User {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+    json_schema: {
+      required: ["id", "name", "full_name", "role", "status"]
+    }
+  };
+
+  string id = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"32345854-f12d-4277-960f-eb3c82daa4da\""
+    }
+  ];
+
+  string name = 2 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"Denis\""
+    }
+  ];
+
+  optional string second_name = 3 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"Tkachenko\""
+    }
+  ];
+
+  string full_name = 4 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"Denis Tkachenko\""
+    }
+  ];
+
+  string email = 5 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"denisdrawler@gmail.com\""
+    }
+  ];
+
+  UserRole role = 6 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"User\""
+    }
+  ];
+
+  UserStatus status = 7 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"ACTIVE\"",
     }
   ];
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/config"
 	authRepo "github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/db/repository/auth"
 	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/security/jwt"
+	userMapper "github.com/deniSSTK/task-engine/auth-service/internal/mappers/user"
 	"github.com/deniSSTK/task-engine/auth-service/utils"
 	authv1 "github.com/deniSSTK/task-engine/gen/proto/auth/v1"
 	defErrors "github.com/deniSSTK/task-engine/libs/errors"
@@ -16,7 +17,6 @@ import (
 	userDomain "github.com/deniSSTK/task-engine/libs/user"
 	"github.com/google/uuid"
 	redisClient "github.com/redis/go-redis/v9"
-
 	"go.uber.org/zap"
 )
 
@@ -232,6 +232,38 @@ func (s *Service) Me(ctx context.Context, token string) (*jwt.TokenPayload, erro
 	payload.Role = status.Role
 
 	return payload, nil
+}
+
+func (s *Service) UpdateUser(
+	ctx context.Context,
+	userId uuid.UUID,
+	dto *authv1.UpdateUserRequest,
+) (*userDomain.User, error) {
+	log := s.log.Named("UpdateUser")
+
+	payload := &authRepo.UpdateUser{Id: userId}
+
+	for _, path := range dto.UpdateMask.GetPaths() {
+		switch path {
+		case "name":
+			payload.Name = dto.Name
+		case "second_name":
+			ptr := dto.SecondName
+			payload.SecondName = &ptr
+		}
+	}
+
+	rawUser, err := s.authRepo.UpdateUser(ctx, payload)
+	if err != nil {
+		log.Error(
+			FailedToUpdateUserInfo.Error(),
+			zap.Object("payload", payload),
+			zap.Error(err),
+		)
+		return nil, FailedToUpdateUserInfo
+	}
+
+	return userMapper.MapEntUserToDomain(rawUser), nil
 }
 
 func (s *Service) verifyStatus(dto *authRepo.GetUserStatusDto) error {

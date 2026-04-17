@@ -1,13 +1,29 @@
 package userDomain
 
-type UserRole string
+import "github.com/google/uuid"
 
-type UserStatus string
+type User struct {
+	Id         uuid.UUID
+	Name       string
+	SecondName *string
+	Email      string
+	Role       UserRole
+	Status     UserStatus
+	FullName   string
+}
 
-const (
-	Admin UserRole = "ADMIN"
-	User  UserRole = "USER"
+func (u *User) BuildFullName() string {
+	if u.SecondName == nil || *u.SecondName == "" {
+		return u.Name
+	}
 
-	Active  UserStatus = "ACTIVE"
-	Blocked UserStatus = "BLOCKED"
-)
+	return u.Name + " " + *u.SecondName
+}
+
+func NewUser(
+	user *User,
+) *User {
+	user.FullName = user.BuildFullName()
+
+	return user
+}

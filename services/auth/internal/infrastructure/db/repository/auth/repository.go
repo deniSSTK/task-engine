@@ -38,26 +38,17 @@ func (r *Repository) CreateUser(
 ) (uuid.UUID, userDomain.UserRole, error) {
 	client := txUtils.FromContext(ctx, r.client)
 
-	var fullName string
-
-	if dto.SecondName != nil {
-		fullName = dto.Name + " " + *dto.SecondName
-	} else {
-		fullName = dto.Name
-	}
-
 	createdUser, err := client.User.
 		Create().
 		SetName(dto.Name).
 		SetNillableSecondName(dto.SecondName).
 		SetEmail(dto.Email).
 		SetPasswordHash(passwordHash).
-		SetFullName(fullName).
 		SetLastLoginAt(time.Now()).
 		Save(ctx)
 
 	if err != nil {
-		return uuid.Nil, userDomain.User, err
+		return uuid.Nil, userDomain.RoleUser, err
 	}
 
 	return createdUser.ID, userDomain.UserRole(createdUser.Role), nil
@@ -140,4 +131,27 @@ func (r *Repository) GetUserStatusDto(
 	}
 
 	return res[0], nil
+}
+
+func (r *Repository) UpdateUser(
+	ctx context.Context,
+	dto *UpdateUser,
+) (*ent.User, error) {
+	client := txUtils.FromContext(ctx, r.client)
+
+	update := client.User.UpdateOneID(dto.Id)
+
+	if dto.Name != nil {
+		update.SetName(*dto.Name)
+	}
+
+	if dto.SecondName != nil {
+		if *dto.SecondName != nil {
+			update.ClearSecondName()
+		} else {
+			update.SetSecondName(**dto.SecondName)
+		}
+	}
+
+	return update.Save(ctx)
 }

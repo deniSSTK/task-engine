@@ -31,9 +31,6 @@ func (User) Fields() []ent.Field {
 			Optional().
 			NotEmpty(),
 
-		field.String("full_name").
-			MaxLen(201),
-
 		field.String("email").
 			MinLen(5).
 			MaxLen(200).
@@ -47,10 +44,10 @@ func (User) Fields() []ent.Field {
 
 		field.Enum("role").
 			Values(
-				string(userDomain.Admin),
-				string(userDomain.User),
+				string(userDomain.RoleAdmin),
+				string(userDomain.RoleUser),
 			).
-			Default(string(userDomain.User)),
+			Default(string(userDomain.RoleUser)),
 
 		field.Enum("status").
 			Values(

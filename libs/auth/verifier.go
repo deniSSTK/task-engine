@@ -3,9 +3,9 @@ package grpcAuth
 import (
 	"context"
 
-	authv1 "github.com/deniSSTK/task-engine/gen/proto/auth/v1"
+	userDomain "github.com/deniSSTK/task-engine/libs/user"
 )
 
 type AuthVerifier interface {
-	Verify(ctx context.Context) (*authv1.AuthUser, error)
+	Verify(ctx context.Context) (*userDomain.AuthUser, error)
 }
