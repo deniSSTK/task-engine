@@ -18,10 +18,5 @@ var (
 
 	FailedToAuthenticateUser = errors.New("failed to authenticate user")
 
-	// TODO: move to domain
-
-	UserBlocked = errors.New("user blocked")
-	UserDeleted = errors.New("user deleted")
-
 	UndefinedUserStatus = errors.New("undefined user status")
 )

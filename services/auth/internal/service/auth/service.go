@@ -286,8 +286,8 @@ func (s *Service) verifyStatus(dto *authRepo.GetUserStatusDto) error {
 	case userDomain.Active:
 		break
 	case userDomain.Blocked:
-		log.Error(UserBlocked.Error())
-		return UserBlocked
+		log.Error(userDomain.UserBlocked.Error())
+		return userDomain.UserBlocked
 	default:
 		log.Error(
 			FailedToAuthenticateUser.Error(),
@@ -297,8 +297,8 @@ func (s *Service) verifyStatus(dto *authRepo.GetUserStatusDto) error {
 	}
 
 	if dto.DeletedAt != nil {
-		log.Error(UserDeleted.Error())
-		return UserDeleted
+		log.Error(userDomain.UserDeleted.Error())
+		return userDomain.UserDeleted
 	}
 
 	return nil
