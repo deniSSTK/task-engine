@@ -5,7 +5,6 @@ package common.v1;
 option go_package = "github.com/deniSSTK/task-engine/gen/proto/common/v1;commonv1";
 
 import "google/protobuf/descriptor.proto";
-import "protoc-gen-openapiv2/options/annotations.proto";
 
 enum AuthPolicy {
   AUTH_POLICY_UNSPECIFIED = 0;

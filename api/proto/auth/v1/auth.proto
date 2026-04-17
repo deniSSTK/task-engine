@@ -5,9 +5,6 @@ package auth.v1;
 option go_package = "github.com/deniSSTK/task-engine/gen/proto/auth/v1;authv1";
 
 import "google/api/annotations.proto";
-import "buf/validate/validate.proto";
-import "protoc-gen-openapiv2/options/annotations.proto";
-import "google/protobuf/field_mask.proto";
 
 import "common/v1/authz.proto";
 
