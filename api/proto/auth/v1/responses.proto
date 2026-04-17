@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package auth.v1;
+
+option go_package = "github.com/deniSSTK/task-engine/gen/proto/auth/v1;authv1";
+
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "buf/validate/validate.proto";
+
+import "auth/v1/common.proto";
+
+message RegisterResponse {
+  TokenDetails tokens = 1;
+}
+
+message LoginResponse {
+  TokenDetails tokens = 1;
+}
+
+message RefreshRequest {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+    json_schema: {
+      required: ["refresh_token"]
+    }
+  };
+
+  string refresh_token = 1 [
+    (buf.validate.field).string.min_len = 1,
+
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"eyJhbGciOiJIUzI1NiIs...\"",
+    }
+  ];
+}
+
+message RefreshResponse {
+  TokenDetails tokens = 1;
+}
+
+message MeResponse {
+  AuthUser user = 1;
+}
+
+message VerifyByIdResponse {}
+
+message UpdateUserResponse {
+  User user = 1;
+}
+
+message LogoutResponse {}

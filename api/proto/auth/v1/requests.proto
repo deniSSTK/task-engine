@@ -1,0 +1,125 @@
+syntax = "proto3";
+
+package auth.v1;
+
+option go_package = "github.com/deniSSTK/task-engine/gen/proto/auth/v1;authv1";
+
+import "buf/validate/validate.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "google/protobuf/field_mask.proto";
+
+message RegisterRequest {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+    json_schema: {
+      required: ["email", "password", "name"]
+    }
+  };
+
+  string email = 1 [
+    (buf.validate.field).string.email = true,
+    (buf.validate.field).string.min_len = 5,
+    (buf.validate.field).string.max_len = 200,
+
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"example@email.com\""
+    }
+  ];
+
+  string password = 2 [
+    (buf.validate.field).string.min_len = 8,
+    (buf.validate.field).string.max_len = 100,
+
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"Str0ngP@ssw0rd\""
+    }
+  ];
+
+  string name = 3 [
+    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.max_len = 100,
+
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"Denis\""
+    }
+  ];
+
+  optional string second_name = 4 [
+    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.max_len = 100,
+
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"Tkachenko\""
+    }
+  ];
+}
+
+message LoginRequest {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+    json_schema: {
+      required: ["email", "password"]
+    }
+  };
+
+  string email = 1 [
+    (buf.validate.field).string.email = true,
+    (buf.validate.field).string.min_len = 5,
+    (buf.validate.field).string.max_len = 200,
+
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"example@email.com\""
+    }
+  ];
+
+  string password = 2 [
+    (buf.validate.field).string.min_len = 8,
+    (buf.validate.field).string.max_len = 100,
+
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"Str0ngP@ssw0rd\""
+    }
+  ];
+}
+
+message MeRequest {}
+
+message VerifyByIdRequest {
+  option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+    json_schema: {
+      required: ["id"]
+    }
+  };
+
+  string id = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"32345854-f12d-4277-960f-eb3c82daa4da\""
+    }
+  ];
+}
+
+message UpdateUserRequest {
+  google.protobuf.FieldMask update_mask = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      read_only: true,
+    }
+  ];
+
+  optional string name = 2 [
+    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.max_len = 100,
+
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"Denis\""
+    }
+  ];
+
+  optional string second_name = 3 [
+    (buf.validate.field).string.min_len = 1,
+    (buf.validate.field).string.max_len = 100,
+
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      example: "\"Tkachenko\""
+    }
+  ];
+}
+
+message LogoutRequest {}

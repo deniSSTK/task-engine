@@ -227,6 +227,8 @@ func (s *Service) VerifyById(ctx context.Context, id uuid.UUID) error {
 func (s *Service) Me(ctx context.Context, token string) (*jwt.TokenPayload, error) {
 	log := s.log.Named("Me")
 
+	// TODO: validate token in cache
+
 	payload, _, err := s.tokenManager.ParseTokenPayload(token, jwt.Access)
 	if err != nil {
 		log.Error(FailedToAuthenticateUser.Error(), zap.Error(err))
