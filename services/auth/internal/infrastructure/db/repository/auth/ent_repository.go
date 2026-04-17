@@ -190,3 +190,19 @@ func (r *EntRepository) DeleteUserSession(
 		SetDeletedAt(time.Now()).
 		Exec(ctx)
 }
+
+func (r *EntRepository) IsExistsSession(
+	ctx context.Context,
+	userId uuid.UUID,
+	refreshToken string,
+) (bool, error) {
+	client := txUtils.FromContext(ctx, r.client)
+
+	return client.UserSession.
+		Query().
+		Where(
+			usersession.UserIDEQ(userId),
+			usersession.RefreshTokenEQ(refreshToken),
+		).
+		Exist(ctx)
+}

@@ -9,6 +9,7 @@ import (
 
 type Repository interface {
 	EmailExists(ctx context.Context, email string) (bool, error)
+	IsExistsSession(ctx context.Context, userId uuid.UUID, refreshToken string) (bool, error)
 	GetUserStatusDto(ctx context.Context, userId uuid.UUID) (GetUserStatusDto, error)
 	GetPasswordHashByEmail(ctx context.Context, email string) (string, error)
 	GetUserIdAndRoleByEmail(ctx context.Context, email string) (GetUserIdAndRoleByEmailDto, error)

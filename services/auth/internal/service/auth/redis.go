@@ -54,7 +54,14 @@ func (s *Service) isSessionValid(
 ) (bool, error) {
 	key := s.buildUserSessionCacheKey(userId)
 
-	// TODO: add isExists from db
+	existsInDb, err := s.authRepo.IsExistsSession(ctx, userId, refreshToken)
+	if err != nil {
+		return false, err
+	}
+
+	if !existsInDb {
+		return false, nil
+	}
 
 	var cachedSession UserSessionCachePayload
 

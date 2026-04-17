@@ -19,7 +19,7 @@ func (s *Service) generateAndStoreTokens(
 		return &jwt.TokenPair{}, err
 	}
 
-	payloadDb.RefreshToken = tokens.RefreshToken
+	payloadDb.RefreshToken = tokens.RefreshToken // TODO: save hash instead
 	payloadDb.ExpiresAt = tokens.RefreshExpiredAt
 
 	if err = s.authRepo.CreateUserSession(ctx, payloadDb); err != nil {
