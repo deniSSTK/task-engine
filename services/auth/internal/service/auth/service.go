@@ -121,13 +121,17 @@ func (s *Service) Login(ctx context.Context, dto *authv1.LoginRequest) (*jwt.Tok
 
 	passwordHash, err := s.authRepo.GetPasswordHashByEmail(ctx, email)
 	if err != nil {
-		log.Error(FailedToValidateCredentials.Error(), zap.Error(err))
-		return nil, FailedToLogin
+		if ent.IsNotFound(err) {
+			log.Error(defErrors.InvalidCredentials.Error())
+			return nil, defErrors.InvalidCredentials
+		}
+		log.Error(defErrors.Internal.Error(), zap.Error(err))
+		return nil, defErrors.Internal
 	}
 
 	if err = utils.CheckPassword(passwordHash, dto.Password); err != nil {
-		log.Error(InvalidCredentials.Error(), zap.Error(err))
-		return nil, InvalidCredentials
+		log.Error(defErrors.InvalidCredentials.Error(), zap.Error(err))
+		return nil, defErrors.InvalidCredentials
 	}
 
 	var tokens *jwt.TokenPair

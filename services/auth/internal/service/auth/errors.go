@@ -4,7 +4,6 @@ import "errors"
 
 var (
 	FailedToValidateCredentials = errors.New("failed to validate credentials")
-	InvalidCredentials          = errors.New("invalid credentials")
 	EmailAlreadyExists          = errors.New("email already exists")
 
 	FailedToCreateUser      = errors.New("failed to create user")

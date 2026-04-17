@@ -104,7 +104,7 @@ func (h *Handler) Login(
 
 	resp, err := h.authService.Login(ctx, dto)
 	if err != nil {
-		if errors.Is(err, authService.InvalidCredentials) {
+		if errors.Is(err, defErrors.InvalidCredentials) {
 			return nil, h.errorWrapper.New(codes.Unauthenticated, err, reasons.InvalidCredentials)
 		}
 
