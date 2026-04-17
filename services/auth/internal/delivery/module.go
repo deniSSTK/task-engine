@@ -1,10 +1,10 @@
 package delivery
 
 import (
-	"github.com/deniSSTK/task-engine/auth-service/internal/delivery/grpc"
+	"github.com/deniSSTK/task-engine/auth-service/internal/delivery/v1/grpc"
 	"go.uber.org/fx"
 )
 
 var Module = fx.Options(
-	grpc.Module,
+	grpcV1.Module,
 )

@@ -1,4 +1,4 @@
-package authGrpc
+package authGrpcV1
 
 import (
 	"context"
@@ -10,13 +10,12 @@ import (
 	authv1 "github.com/deniSSTK/task-engine/gen/proto/auth/v1"
 	grpcAuth "github.com/deniSSTK/task-engine/libs/auth"
 	defErrors "github.com/deniSSTK/task-engine/libs/errors"
-	grpcUtils "github.com/deniSSTK/task-engine/libs/grpc"
+	grpcErr "github.com/deniSSTK/task-engine/libs/grpc/error"
 	"github.com/deniSSTK/task-engine/libs/logger"
+	"github.com/deniSSTK/task-engine/libs/reasons"
 	userDomain "github.com/deniSSTK/task-engine/libs/user"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type Handler struct {
@@ -25,7 +24,8 @@ type Handler struct {
 
 	authService *authService.Service
 
-	log *logger.Logger
+	errorWrapper *grpcErr.AppErrorWrapper
+	log          *logger.Logger
 }
 
 func NewHandler(
@@ -33,6 +33,7 @@ func NewHandler(
 
 	authService *authService.Service,
 
+	errorWrapper *grpcErr.AppErrorWrapper,
 	log *logger.Logger,
 ) *Handler {
 	return &Handler{
@@ -40,18 +41,19 @@ func NewHandler(
 
 		authService: authService,
 
-		log: log,
+		errorWrapper: errorWrapper,
+		log:          log,
 	}
 }
 
-// TODO: add error codes
+// TODO: add logs
 
 func (h *Handler) Register(
 	ctx context.Context,
 	dto *authv1.RegisterRequest,
 ) (*authv1.RegisterResponse, error) {
 	if dto == nil {
-		return nil, grpcUtils.BodyIsRequired
+		return nil, h.errorWrapper.BodyIsRequired()
 	}
 
 	dto.Email = strings.ToLower(strings.TrimSpace(dto.Email))
@@ -68,16 +70,16 @@ func (h *Handler) Register(
 	}
 
 	if err := h.protoValidator.Validate(dto); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, h.errorWrapper.ValidationFailed(err)
 	}
 
 	resp, err := h.authService.Register(ctx, dto)
 	if err != nil {
 		if errors.Is(err, authService.EmailAlreadyExists) {
-			return nil, status.Error(codes.AlreadyExists, err.Error())
+			return nil, h.errorWrapper.New(codes.AlreadyExists, err, reasons.EmailAlreadyExists, "email")
 		}
 
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, h.errorWrapper.New(codes.Internal, err, reasons.InternalServerError)
 	}
 
 	return &authv1.RegisterResponse{
@@ -90,23 +92,23 @@ func (h *Handler) Login(
 	dto *authv1.LoginRequest,
 ) (*authv1.LoginResponse, error) {
 	if dto == nil {
-		return nil, grpcUtils.BodyIsRequired
+		return nil, h.errorWrapper.BodyIsRequired()
 	}
 
 	dto.Email = strings.ToLower(strings.TrimSpace(dto.Email))
 	dto.Password = strings.TrimSpace(dto.Password)
 
 	if err := h.protoValidator.Validate(dto); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, h.errorWrapper.ValidationFailed(err)
 	}
 
 	resp, err := h.authService.Login(ctx, dto)
 	if err != nil {
 		if errors.Is(err, authService.InvalidCredentials) {
-			return nil, status.Error(codes.InvalidArgument, err.Error())
+			return nil, h.errorWrapper.New(codes.Unauthenticated, err, reasons.InvalidCredentials)
 		}
 
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, h.errorWrapper.InternalServerError(err)
 	}
 
 	return &authv1.LoginResponse{
@@ -119,16 +121,16 @@ func (h *Handler) Refresh(
 	dto *authv1.RefreshRequest,
 ) (*authv1.RefreshResponse, error) {
 	if dto == nil {
-		return nil, grpcUtils.BodyIsRequired
+		return nil, h.errorWrapper.BodyIsRequired()
 	}
 
 	if err := h.protoValidator.Validate(dto); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, h.errorWrapper.ValidationFailed(err)
 	}
 
 	resp, err := h.authService.Refresh(ctx, dto)
 	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, err.Error())
+		return nil, h.errorWrapper.New(codes.Unauthenticated, err, reasons.AuthenticationFailed)
 	}
 
 	return &authv1.RefreshResponse{
@@ -145,21 +147,19 @@ func (h *Handler) Me(
 	token, err := grpcAuth.ExtractAuthToken(ctx, h.log)
 	if err != nil {
 		log.Error(err.Error())
-		return nil, status.Error(codes.Unauthenticated, err.Error())
+		return nil, h.errorWrapper.New(codes.Unauthenticated, err, reasons.AuthenticationFailed)
 	}
 
 	payload, err := h.authService.Me(ctx, token)
 	if err != nil {
 		log.Error(err.Error())
-		return nil, status.Error(codes.Unauthenticated, err.Error())
+		return nil, h.errorWrapper.New(codes.Unauthenticated, err, reasons.AuthenticationFailed)
 	}
 
 	role, ok := userDomain.MapRoleFromDomain(payload.Role)
 	if !ok {
-		log.Error(defErrors.UserUnauthenticated.Error(),
-			zap.String("reason", InvalidRole.Error()),
-		)
-		return nil, status.Error(codes.Unauthenticated, defErrors.UserUnauthenticated.Error())
+		return nil,
+			h.errorWrapper.Unauthenticated()
 	}
 
 	return &authv1.MeResponse{
@@ -175,21 +175,24 @@ func (h *Handler) VerifyById(
 	dto *authv1.VerifyByIdRequest,
 ) (*authv1.VerifyByIdResponse, error) {
 	if dto == nil {
-		return nil, grpcUtils.BodyIsRequired
+		return nil, h.errorWrapper.BodyIsRequired()
 	}
 
 	if err := h.protoValidator.Validate(dto); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, h.errorWrapper.ValidationFailed(err)
 	}
 
 	id, err := uuid.Parse(dto.Id)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, h.errorWrapper.New(codes.InvalidArgument, err, reasons.InvalidArgument)
 	}
 
 	if err = h.authService.VerifyById(ctx, id); err != nil {
-		// TODO: change error code to Unauthenticated OR NotFound
-		return nil, status.Error(codes.NotFound, err.Error())
+		if errors.Is(err, defErrors.NotFound) {
+			return nil, h.errorWrapper.NotFound()
+		}
+
+		return nil, h.errorWrapper.InternalServerError(err)
 	}
 
 	return &authv1.VerifyByIdResponse{}, nil
@@ -200,26 +203,26 @@ func (h *Handler) UpdateUser(
 	dto *authv1.UpdateUserRequest,
 ) (*authv1.UpdateUserResponse, error) {
 	if dto == nil {
-		return nil, grpcUtils.BodyIsRequired
+		return nil, h.errorWrapper.BodyIsRequired()
 	}
 
 	if err := h.protoValidator.Validate(dto); err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+		return nil, h.errorWrapper.ValidationFailed(err)
 	}
 
 	authUser, ok := grpcAuth.AuthUserFromContext(ctx)
 	if !ok {
-		return nil, status.Error(codes.Unauthenticated, defErrors.UserUnauthenticated.Error())
+		return nil, h.errorWrapper.Unauthenticated()
 	}
 
 	rawUser, err := h.authService.UpdateUser(ctx, authUser.Id, dto)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, h.errorWrapper.InternalServerError(err)
 	}
 
 	user, ok := MapDomainUserToProtoUser(rawUser)
 	if !ok {
-		return nil, status.Error(codes.Internal, defErrors.FailedMap.Error())
+		return nil, h.errorWrapper.InternalServerError(defErrors.FailedMap)
 	}
 
 	return &authv1.UpdateUserResponse{

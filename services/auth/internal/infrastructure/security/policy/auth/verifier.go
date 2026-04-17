@@ -3,7 +3,7 @@ package authPolicy
 import (
 	"context"
 
-	"github.com/deniSSTK/task-engine/auth-service/internal/delivery/grpc/auth"
+	"github.com/deniSSTK/task-engine/auth-service/internal/delivery/v1/grpc/auth"
 	authv1 "github.com/deniSSTK/task-engine/gen/proto/auth/v1"
 	grpcAuth "github.com/deniSSTK/task-engine/libs/auth"
 	defErrors "github.com/deniSSTK/task-engine/libs/errors"
@@ -12,13 +12,13 @@ import (
 )
 
 type LocalAuthVerifier struct {
-	authHandler *authGrpc.Handler
+	authHandler *authGrpcV1.Handler
 
 	log *logger.Logger
 }
 
 func NewLocalVerifier(
-	authHandler *authGrpc.Handler,
+	authHandler *authGrpcV1.Handler,
 	log *logger.Logger,
 ) grpcAuth.AuthVerifier {
 	return &LocalAuthVerifier{

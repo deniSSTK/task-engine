@@ -12,6 +12,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	_ "google.golang.org/genproto/googleapis/rpc/errdetails"
 )
 
 func main() {

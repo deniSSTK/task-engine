@@ -206,6 +206,14 @@ func (s *Service) VerifyById(ctx context.Context, id uuid.UUID) error {
 	// TODO: get status from cache
 	status, err := s.authRepo.GetUserStatusDto(ctx, id)
 	if err != nil {
+		if ent.IsNotFound(err) {
+			log.Error(
+				defErrors.NotFound.Error(),
+				zap.Error(err),
+				zap.String("id", id.String()),
+			)
+			return defErrors.NotFound
+		}
 		log.Error(FailedToAuthenticateUser.Error(), zap.Error(err))
 		return err
 	}

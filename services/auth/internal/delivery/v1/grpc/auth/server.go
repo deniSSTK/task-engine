@@ -1,4 +1,4 @@
-package authGrpc
+package authGrpcV1
 
 import (
 	authv1 "github.com/deniSSTK/task-engine/gen/proto/auth/v1"

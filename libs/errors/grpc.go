@@ -3,6 +3,7 @@ package defErrors
 import "errors"
 
 var (
+	BodyIsRequired      = errors.New("body is required")
 	UserUnauthenticated = errors.New("user is not authenticated")
 
 	MissingMetadata      = errors.New("missing metadata")

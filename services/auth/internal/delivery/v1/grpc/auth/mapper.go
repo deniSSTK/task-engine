@@ -1,4 +1,4 @@
-package authGrpc
+package authGrpcV1
 
 import (
 	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/security/jwt"
