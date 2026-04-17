@@ -7,7 +7,6 @@ import (
 	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/config"
 	authRepo "github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/db/repository/auth"
 	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/security/jwt"
-	userMapper "github.com/deniSSTK/task-engine/auth-service/internal/mappers/user"
 	"github.com/deniSSTK/task-engine/auth-service/utils"
 	authv1 "github.com/deniSSTK/task-engine/gen/proto/auth/v1"
 	defErrors "github.com/deniSSTK/task-engine/libs/errors"
@@ -21,7 +20,7 @@ import (
 )
 
 type Service struct {
-	authRepo    *authRepo.Repository
+	authRepo    authRepo.Repository
 	redisClient *redisClient.Client
 
 	tokenManager       *jwt.TokenManager
@@ -32,7 +31,7 @@ type Service struct {
 }
 
 func NewService(
-	authRepo *authRepo.Repository,
+	authRepo authRepo.Repository,
 	redis *redis.Redis,
 
 	tokenManager *jwt.TokenManager,
@@ -259,7 +258,7 @@ func (s *Service) UpdateUser(
 		}
 	}
 
-	rawUser, err := s.authRepo.UpdateUser(ctx, payload)
+	user, err := s.authRepo.UpdateUser(ctx, payload)
 	if err != nil {
 		log.Error(
 			FailedToUpdateUserInfo.Error(),
@@ -269,7 +268,7 @@ func (s *Service) UpdateUser(
 		return nil, FailedToUpdateUserInfo
 	}
 
-	return userMapper.MapEntUserToDomain(rawUser), nil
+	return user, nil
 }
 
 func (s *Service) verifyStatus(dto *authRepo.GetUserStatusDto) error {

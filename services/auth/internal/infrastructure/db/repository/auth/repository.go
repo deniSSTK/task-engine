@@ -7,21 +7,22 @@ import (
 	"github.com/deniSSTK/task-engine/auth-service/ent"
 	"github.com/deniSSTK/task-engine/auth-service/ent/user"
 	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/db"
+	userMapper "github.com/deniSSTK/task-engine/auth-service/internal/mappers/user"
 	txUtils "github.com/deniSSTK/task-engine/auth-service/utils/tx-utils"
 	defErrors "github.com/deniSSTK/task-engine/libs/errors"
 	userDomain "github.com/deniSSTK/task-engine/libs/user"
 	"github.com/google/uuid"
 )
 
-type Repository struct {
+type EntRepository struct {
 	client *ent.Client
 }
 
-func NewRepository(db *db.Database) *Repository {
-	return &Repository{client: db.Client()}
+func NewEntRepository(db *db.Database) Repository {
+	return &EntRepository{client: db.Client()}
 }
 
-func (r *Repository) EmailExists(ctx context.Context, email string) (bool, error) {
+func (r *EntRepository) EmailExists(ctx context.Context, email string) (bool, error) {
 	client := txUtils.FromContext(ctx, r.client)
 
 	return client.User.
@@ -30,7 +31,7 @@ func (r *Repository) EmailExists(ctx context.Context, email string) (bool, error
 		Exist(ctx)
 }
 
-func (r *Repository) CreateUser(
+func (r *EntRepository) CreateUser(
 	ctx context.Context,
 	dto *CreateUserDto,
 ) (uuid.UUID, userDomain.UserRole, error) {
@@ -52,7 +53,7 @@ func (r *Repository) CreateUser(
 	return createdUser.ID, userDomain.UserRole(createdUser.Role), nil
 }
 
-func (r *Repository) GetPasswordHashByEmail(
+func (r *EntRepository) GetPasswordHashByEmail(
 	ctx context.Context,
 	email string,
 ) (string, error) {
@@ -65,7 +66,7 @@ func (r *Repository) GetPasswordHashByEmail(
 		String(ctx)
 }
 
-func (r *Repository) UpdateUserLastLoginAtByEmail(
+func (r *EntRepository) UpdateUserLastLoginAtByEmail(
 	ctx context.Context,
 	email string,
 ) error {
@@ -78,7 +79,7 @@ func (r *Repository) UpdateUserLastLoginAtByEmail(
 		Exec(ctx)
 }
 
-func (r *Repository) GetUserIdAndRoleByEmail(
+func (r *EntRepository) GetUserIdAndRoleByEmail(
 	ctx context.Context,
 	email string,
 ) (GetUserIdAndRoleByEmailDto, error) {
@@ -104,7 +105,7 @@ func (r *Repository) GetUserIdAndRoleByEmail(
 	return res[0], nil
 }
 
-func (r *Repository) GetUserStatusDto(
+func (r *EntRepository) GetUserStatusDto(
 	ctx context.Context,
 	userId uuid.UUID,
 ) (GetUserStatusDto, error) {
@@ -131,10 +132,10 @@ func (r *Repository) GetUserStatusDto(
 	return res[0], nil
 }
 
-func (r *Repository) UpdateUser(
+func (r *EntRepository) UpdateUser(
 	ctx context.Context,
 	dto *UpdateUser,
-) (*ent.User, error) {
+) (*userDomain.User, error) {
 	client := txUtils.FromContext(ctx, r.client)
 
 	update := client.User.UpdateOneID(dto.Id)
@@ -151,5 +152,10 @@ func (r *Repository) UpdateUser(
 		}
 	}
 
-	return update.Save(ctx)
+	rawUser, err := update.Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return userMapper.MapEntUserToDomain(rawUser), nil
 }

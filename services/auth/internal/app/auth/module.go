@@ -9,7 +9,7 @@ import (
 
 var Module = fx.Options(
 	fx.Provide(
-		authRepo.NewRepository,
+		authRepo.NewEntRepository,
 		authService.NewService,
 
 		//authGrpc.NewServer,
