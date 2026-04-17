@@ -159,3 +159,20 @@ func (r *EntRepository) UpdateUser(
 
 	return userMapper.MapEntUserToDomain(rawUser), nil
 }
+
+func (r *EntRepository) CreateUserSession(
+	ctx context.Context,
+	dto *CreateUserSessionDto,
+) error {
+	client := txUtils.FromContext(ctx, r.client)
+
+	return client.UserSession.
+		Create().
+		SetUserID(dto.UserId).
+		SetRefreshToken(dto.RefreshToken).
+		SetExpiresAt(dto.ExpiresAt).
+		SetNillableIP(dto.Ip).
+		SetNillableUserAgent(dto.UserAgent).
+		Exec(ctx)
+
+}

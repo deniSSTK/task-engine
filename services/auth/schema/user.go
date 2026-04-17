@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/deniSSTK/task-engine/libs/mixin"
 	userDomain "github.com/deniSSTK/task-engine/libs/user"
@@ -60,5 +61,7 @@ func (User) Fields() []ent.Field {
 
 // Edges of the User.
 func (User) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("sessions", UserSession.Type),
+	}
 }

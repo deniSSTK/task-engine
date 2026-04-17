@@ -14,6 +14,7 @@ type Repository interface {
 	GetUserIdAndRoleByEmail(ctx context.Context, email string) (GetUserIdAndRoleByEmailDto, error)
 
 	CreateUser(ctx context.Context, dto *CreateUserDto) (uuid.UUID, userDomain.UserRole, error)
+	CreateUserSession(ctx context.Context, dto *CreateUserSessionDto) error
 
 	UpdateUser(ctx context.Context, dto *UpdateUser) (*userDomain.User, error)
 	UpdateUserLastLoginAtByEmail(ctx context.Context, email string) error

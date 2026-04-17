@@ -30,3 +30,11 @@ type CreateUserDto struct {
 	Name         string
 	SecondName   *string
 }
+
+type CreateUserSessionDto struct {
+	RefreshToken string
+	Ip           *string
+	UserAgent    *string
+	ExpiresAt    time.Time
+	UserId       uuid.UUID
+}

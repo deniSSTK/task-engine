@@ -54,7 +54,11 @@ func NewService(
 	}
 }
 
-func (s *Service) Register(ctx context.Context, dto *authv1.RegisterRequest) (*jwt.TokenPair, error) {
+func (s *Service) Register(
+	ctx context.Context,
+	dto *authv1.RegisterRequest,
+	ip, userAgent *string,
+) (*jwt.TokenPair, error) {
 	log := s.log.Named("Register")
 
 	emailExists, err := s.authRepo.EmailExists(ctx, dto.Email)
@@ -100,7 +104,13 @@ func (s *Service) Register(ctx context.Context, dto *authv1.RegisterRequest) (*j
 			Role:   role,
 		}
 
-		tokens, txErr = s.generateAndStoreTokens(txCtx, tokenPayload)
+		dbPayload := &authRepo.CreateUserSessionDto{
+			Ip:        ip,
+			UserAgent: userAgent,
+			UserId:    userId,
+		}
+
+		tokens, txErr = s.generateAndStoreTokens(txCtx, tokenPayload, dbPayload)
 		if txErr != nil {
 			log.Error(FailedToGenerateTokens.Error(), zap.Error(txErr))
 			return FailedToGenerateTokens
@@ -115,7 +125,11 @@ func (s *Service) Register(ctx context.Context, dto *authv1.RegisterRequest) (*j
 	return tokens, nil
 }
 
-func (s *Service) Login(ctx context.Context, dto *authv1.LoginRequest) (*jwt.TokenPair, error) {
+func (s *Service) Login(
+	ctx context.Context,
+	dto *authv1.LoginRequest,
+	ip, userAgent *string,
+) (*jwt.TokenPair, error) {
 	log := s.log.Named("Login")
 	email := dto.Email
 
@@ -153,7 +167,13 @@ func (s *Service) Login(ctx context.Context, dto *authv1.LoginRequest) (*jwt.Tok
 			Role:   targetUser.Role,
 		}
 
-		tokens, txErr = s.generateAndStoreTokens(txCtx, payload)
+		dbPayload := &authRepo.CreateUserSessionDto{
+			Ip:        ip,
+			UserAgent: userAgent,
+			UserId:    targetUser.Id,
+		}
+
+		tokens, txErr = s.generateAndStoreTokens(txCtx, payload, dbPayload)
 		if txErr != nil {
 			s.log.Error(FailedToGenerateTokens.Error(), zap.Error(txErr))
 			return FailedToGenerateTokens

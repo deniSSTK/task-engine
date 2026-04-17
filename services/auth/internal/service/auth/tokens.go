@@ -3,6 +3,7 @@ package authService
 import (
 	"context"
 
+	authRepo "github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/db/repository/auth"
 	"github.com/deniSSTK/task-engine/auth-service/internal/infrastructure/security/jwt"
 	"go.uber.org/zap"
 )
@@ -10,6 +11,7 @@ import (
 func (s *Service) generateAndStoreTokens(
 	ctx context.Context,
 	payload jwt.TokenPayload,
+	payloadDb *authRepo.CreateUserSessionDto,
 ) (*jwt.TokenPair, error) {
 	tokens, err := s.tokenManager.GenerateBothTokens(payload)
 	if err != nil {
@@ -17,7 +19,13 @@ func (s *Service) generateAndStoreTokens(
 		return &jwt.TokenPair{}, err
 	}
 
-	// TODO: create db session with deviceId
+	payloadDb.RefreshToken = tokens.RefreshToken
+	payloadDb.ExpiresAt = tokens.RefreshExpiredAt
+
+	if err = s.authRepo.CreateUserSession(ctx, payloadDb); err != nil {
+		s.log.Error(FailedToSaveUserSessionInDb.Error(), zap.Error(err))
+		return &jwt.TokenPair{}, FailedToSaveUserSessionInDb
+	}
 
 	cachePayload := UserSessionCachePayload{
 		UserId:       payload.UserId,

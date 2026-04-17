@@ -16,6 +16,8 @@ import (
 	userDomain "github.com/deniSSTK/task-engine/libs/user"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/peer"
 )
 
 type Handler struct {
@@ -73,7 +75,9 @@ func (h *Handler) Register(
 		return nil, h.errorWrapper.ValidationFailed(err)
 	}
 
-	resp, err := h.authService.Register(ctx, dto)
+	ip, userAgent := h.GetIpAndUserAgent(ctx)
+
+	resp, err := h.authService.Register(ctx, dto, ip, userAgent)
 	if err != nil {
 		if errors.Is(err, authService.EmailAlreadyExists) {
 			return nil, h.errorWrapper.New(codes.AlreadyExists, err, reasons.EmailAlreadyExists, "email")
@@ -102,7 +106,9 @@ func (h *Handler) Login(
 		return nil, h.errorWrapper.ValidationFailed(err)
 	}
 
-	resp, err := h.authService.Login(ctx, dto)
+	ip, userAgent := h.GetIpAndUserAgent(ctx)
+
+	resp, err := h.authService.Login(ctx, dto, ip, userAgent)
 	if err != nil {
 		if errors.Is(err, defErrors.InvalidCredentials) {
 			return nil, h.errorWrapper.New(codes.Unauthenticated, err, reasons.InvalidCredentials)
@@ -228,4 +234,32 @@ func (h *Handler) UpdateUser(
 	return &authv1.UpdateUserResponse{
 		User: user,
 	}, nil
+}
+
+func (h *Handler) Logout(
+	ctx context.Context,
+	_ *authv1.LogoutRequest,
+) (*authv1.LogoutResponse, error) {
+	// todo: implement
+
+	return &authv1.LogoutResponse{}, nil
+}
+
+func (h *Handler) GetIpAndUserAgent(ctx context.Context) (*string, *string) {
+	var ip, userAgent *string
+
+	ipRaw, ok := peer.FromContext(ctx)
+	if ok {
+		val := ipRaw.Addr.String()
+		ip = &val
+	}
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		if ua := md.Get("user-agent"); len(ua) > 0 {
+			userAgent = &ua[0]
+		}
+	}
+
+	return ip, userAgent
 }
