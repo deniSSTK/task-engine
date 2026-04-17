@@ -2,18 +2,10 @@ syntax = "proto3";
 
 package common.v1;
 
-import "google/protobuf/descriptor.proto";
-import "protoc-gen-openapiv2/options/annotations.proto";
-
 option go_package = "github.com/deniSSTK/task-engine/gen/proto/common/v1;commonv1";
 
-option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
-  info: {
-    title: "Task Engine API";
-    version: "1.0";
-  }
-  base_path: "/api";
-};
+import "google/protobuf/descriptor.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 enum AuthPolicy {
   AUTH_POLICY_UNSPECIFIED = 0;
