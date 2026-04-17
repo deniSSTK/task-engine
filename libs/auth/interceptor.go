@@ -13,13 +13,13 @@ import (
 
 type authUserCtxKey struct{}
 
-func WithAuthUser(ctx context.Context, authUser userDomain.AuthUser) context.Context {
+func WithAuthUser(ctx context.Context, authUser *userDomain.AuthUser) context.Context {
 	return context.WithValue(ctx, authUserCtxKey{}, authUser)
 }
 
 func AuthUserFromContext(ctx context.Context) (*userDomain.AuthUser, bool) {
-	authUser, ok := ctx.Value(authUserCtxKey{}).(userDomain.AuthUser)
-	return &authUser, ok
+	authUser, ok := ctx.Value(authUserCtxKey{}).(*userDomain.AuthUser)
+	return authUser, ok
 }
 
 func UnaryAuthInterceptor(
@@ -57,7 +57,7 @@ func UnaryAuthInterceptor(
 			return nil, registry.errorWrapper.PermissionDenied()
 		}
 
-		ctx = WithAuthUser(ctx, *authUser)
+		ctx = WithAuthUser(ctx, authUser)
 
 		return handler(ctx, req)
 	}
