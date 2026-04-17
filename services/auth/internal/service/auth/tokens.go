@@ -32,3 +32,7 @@ func (s *Service) generateAndStoreTokens(
 
 	return tokens, nil
 }
+
+// TODO: delete token in cache
+
+// TODO: validate token in cache
