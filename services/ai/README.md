@@ -15,3 +15,7 @@ Automatically drafts detailed technical or project-specific descriptions based o
 ## LLM integration
 
 This service uses a Provider-based Architecture to interface with LLMs.
+
+## Endpoints
+
+[//]: # (TODO: Add endpoints)
